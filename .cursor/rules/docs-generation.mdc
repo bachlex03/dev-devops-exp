@@ -1,0 +1,65 @@
+---
+alwaysApply: true
+---
+
+# Documentation Generation Rules
+
+When generating documentation for concepts, CLI commands, tools, or any technical content, follow the **5W1H method** (What, Where, When, Why, How) in a structured, step-by-step format.
+
+## Required Structure
+
+### 1. What?
+**Always required.** Provide a clear, concise definition or description of the concept, command, or tool.
+- Start with a brief one-sentence summary
+- Follow with detailed explanation if needed
+- Use simple, clear language
+
+### 2. Where?
+**Optional but recommended.** Specify the context, location, or environment where this applies.
+- File paths, directories, or system locations
+- Platform-specific information (OS, cloud provider, etc.)
+- Configuration files or settings locations
+
+### 3. When?
+**Optional but recommended.** Explain when to use this concept or command.
+- Use cases and scenarios
+- Prerequisites or conditions
+- Timing considerations
+
+### 4. Why?
+**Optional but recommended.** Explain the purpose, benefits, or rationale.
+- Problem it solves
+- Benefits and advantages
+- When to choose this over alternatives
+
+### 5. How?
+**Always required.** Provide practical implementation details.
+- Step-by-step instructions
+- Code examples or command syntax
+- Configuration examples
+- Best practices and tips
+
+### Optional: Pros and Cons
+**Optional but recommended.** Summarize strengths and trade-offs to help decision-making.
+- List **Pros** as bullet points that highlight benefits, advantages, or good use cases
+- List **Cons** as bullet points that highlight limitations, risks, or bad use cases
+- Keep each point short and concrete (1–2 lines)
+- Use this section especially when comparing tools, approaches, or configuration options
+
+## Formatting Guidelines
+
+- Use clear headings and subheadings
+- Include code blocks with proper syntax highlighting
+- Add examples for complex concepts
+- Use bullet points for lists
+- Include diagrams or visual aids when helpful
+- Mark optional sections clearly
+
+## Quality Checklist
+
+- [ ] All required sections (What? and How?) are present
+- [ ] Information is accurate and up-to-date
+- [ ] Examples are practical and relevant
+- [ ] Code blocks are properly formatted
+- [ ] Language is clear and accessible
+- [ ] Structure follows the 5W1H method
