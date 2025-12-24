@@ -1,0 +1,33 @@
+apiVersion: apps/v1                   # Use Deployment API group/version
+kind: Deployment                      # Manage pods via a Deployment
+metadata:
+  name: postgres                      # Deployment name
+spec:
+  replicas: 1                         # Run a single Postgres pod
+  selector:                           # Label selector for managed pods
+    matchLabels:
+      app: postgres
+  template:                           # Pod template
+    metadata:
+      labels:
+        app: postgres                 # Must match selector and Service
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest      # Pin a version in production
+          env:                        # Basic DB bootstrap values (plaintext here)
+            - name: POSTGRES_DB
+              value: mydatabase
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_USER
+              value: user
+          ports:
+            - containerPort: 5432     # PostgreSQL default port
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-storage  # Mount the PVC for data files
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc   # Binds to the PVC defined in storage manifest

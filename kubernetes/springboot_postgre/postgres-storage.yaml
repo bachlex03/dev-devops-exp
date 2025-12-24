@@ -1,0 +1,22 @@
+apiVersion: v1                        # Core storage API
+kind: PersistentVolume                # Define a PV backing Postgres data
+metadata:
+  name: postgres-pv
+spec:
+  capacity:
+    storage: 1Gi                      # Size of the volume
+  accessModes:
+    - ReadWriteOnce                   # Single-node read/write
+  hostPath:
+    path: /data/postgres              # Node-local path (dev/local use)
+---
+apiVersion: v1                        # PVC requesting storage
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce                   # Matches PV access mode
+  resources:
+    requests:
+      storage: 1Gi                    # Requested size
