@@ -72,6 +72,52 @@ kubectl exec -it <pod-name> -- /bin/sh
 kubectl delete pod <pod-name>
 ```
 
+**Create Pod**:
+Describe: Creates a new Pod in the cluster. The imperative approach creates a Pod directly from the command line with specified parameters, while the declarative approach uses a YAML manifest file to define the Pod configuration. The declarative approach is preferred as it allows version control and easier management.
+
+- Imperative:
+`kubectl run simple-pod --image=busybox --restart=Never --command -- sleep 3600`
+
+- Declarative:
+`kubectl apply -f example-pod.yaml`
+
+
+**Describe Pod**:
+Describe: Displays detailed information about a specific Pod, including its status, events, container details, resource requests/limits, and configuration. Useful for debugging issues, understanding Pod state, and troubleshooting why a Pod might not be running correctly.
+
+`kubectl describe pod example-pod`
+
+**Delete Pod**:
+Describe: Removes a Pod from the cluster. Can delete by Pod name or by referencing a YAML file. The `--force --grace-period=0` option immediately terminates the Pod without waiting for graceful shutdown. Use label selectors to delete multiple Pods matching specific criteria.
+
+`kubectl delete pod <pod-name>`
+`kubectl delete -f my-pod.yaml`
+
+Option: delete immediately not wait to terminate
+`--force --grace-period=0`
+
+Option: delete many
+`kubectl delete pods -l app=myapp`
+
+
+**Exec pod**:
+Describe: Executes a command inside a running container within a Pod. The `-it` flags provide an interactive terminal session. Commonly used to debug issues, inspect files, or run diagnostic commands inside the container.
+
+`kubectl exec -it <pod-name> -- /bin/sh`
+
+**Logs**:
+Describe: Retrieves and displays logs from a container running in a Pod. Use the `-c` flag to specify a container name when the Pod has multiple containers. The `-f` flag follows the log output in real-time, similar to `tail -f`.
+
+`kubectl logs <pod-name> [-c <container>]`
+
+Option: follow realtime by `-f`
+
+**Port Forward**:
+Describe: Forwards network traffic from a local port on your machine to a port on a Pod. This allows you to access Pod services locally without exposing them through a Service. Useful for testing, debugging, or accessing applications that aren't exposed externally.
+
+`kubectl port-forward pod/<pod-name> 8080:80`
+
+
 ### Deployment
 - **What**: Manages a set of replica Pods and enables declarative updates for Pods.
 - **Where**: Deployed to the Kubernetes cluster.
