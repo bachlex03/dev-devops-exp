@@ -1,24 +1,24 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1                         # Deployment API
+kind: Deployment                            # Manage Spring Boot app pods
 metadata:
   name: spring-boot-app
 spec:
-  replicas: 1
+  replicas: 1                               # Single replica
   selector:
     matchLabels:
       app: spring-boot-app
-  template:
+  template:                                 # Pod template
     metadata:
       labels:
-        app: spring-boot-app
+        app: spring-boot-app                # Must match selector and Service
     spec:
       containers:
         - name: spring-boot-app
-          image: spring-boot-app:latest
-          imagePullPolicy: Never
+          image: spring-boot-app:latest     # Built locally; tag/pin in prod
+          imagePullPolicy: Never            # Use local image, skip pulls (minikube/kind)
           ports:
-            - containerPort: 8080
-          env:
+            - containerPort: 8080           # App listens here
+          env:                              # DB connectivity settings
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://postgres:5432/mydatabase
             - name: SPRING_DATASOURCE_USERNAME
