@@ -273,3 +273,366 @@ kubectl port-forward <pod-name> <local-port>:<pod-port>
 - Implement CI/CD with Kubernetes
 - Explore service meshes like Istio or Linkerd
 - Learn about Kubernetes security best practices
+
+
+## ConfigMap
+
+**Create ConfigMap**:
+
+- Imperative:
+
+`kubectl create configmap my-cm --from-literal=key1=value1 --from-literal=key2=value2`
+
+- Declarative (YAML)
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-configmap
+data:
+  key1: value1
+  config.properties: |  # Multi-line file
+    property1=val1
+    property2=val2
+binaryData:  # Cho binary, base64-encoded
+  binary-key: <base64-data>
+immutable: true  # Optional
+```
+
+`kubectl apply -f cm.yaml`
+
+**Get**:
+
+`kubectl get configmap`
+
+**Describe**:
+
+`kubectl describe cm my-cm`
+<!-- (hiển thị data plain) -->
+
+**Edit**:
+
+`kubectl edit cm my-cm`
+
+**Delete**:
+
+`kubectl delete cm my-cm`
+
+**Xem data**:
+
+`kubectl get cm my-cm -o yaml | grep data -A 10`
+
+## Secret
+
+**Create Secret**:
+
+- Imperative:
++ Generic: `kubectl create secret generic my-secret --from-literal=password=supersecret --from-file=ssh-key=/path/to/key`
+
++ TLS: `kubectl create secret tls my-tls --cert=path/to/cert --key=path/to/key`
+
++ Docker registry: `kubectl create secret docker-registry my-reg --docker-server=... --docker-username=...`
+
+- Declarative (YAML)
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+type: Opaque  # Generic
+data:
+  password: c3VwZXJzZWNyZXQ=  # echo -n 'supersecret' | base64
+  api-key: YXBpa2V5Cg==  
+stringData:  # Plain text, Kubernetes sẽ encode
+  username: admin
+immutable: true
+```
+
+`kubectl apply -f secret.yaml`
+
+Note: Sử dụng stringData để tránh encode thủ công.
+
+**Get**:
+
+`kubectl get secret`
+
+**Describe**:
+
+`kubectl describe secret my-secret`
+<!-- (không hiển thị data) -->
+
+**Edit**:
+
+`kubectl edit cm my-cm`
+
+**Delete**:
+
+`kubectl delete cm my-cm`
+
+**Xem data**:
+
+`kubectl get secret my-secret -o jsonpath='{.data.password}' | base64 -d`
+
+## Mount ConfigMap/Secret Vào Pod Trong YAML
+
+### Mount Làm Environment Variables
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+spec:
+  containers:
+  - name: app
+    image: busybox
+    env:
+    - name: KEY1
+      valueFrom:
+        configMapKeyRef:
+          name: my-configmap
+          key: key1
+    - name: PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: my-secret
+          key: password
+```
+
+### Mount Làm Volumes
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+spec:
+  containers:
+  - name: app
+    image: nginx
+    volumeMounts:
+    - name: config-vol
+      mountPath: /etc/config  # Đường dẫn trong container
+      readOnly: true
+    - name: secret-vol
+      mountPath: /etc/secret
+  volumes:
+  - name: config-vol
+    configMap:
+      name: my-configmap
+      items:  # Optional, chỉ mount key cụ thể
+      - key: config.properties
+        path: app.conf  # Tên file trong volume
+  - name: secret-vol
+    secret:
+      secretName: my-secret
+      items:
+      - key: password
+        path: db-pass.txt
+        mode: 0400  # Permissions
+```
+
+
+Note: Dùng subPath để mount file cụ thể mà không overwrite thư mục.
+
+## Environment Variables
+
+
+### Command
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: env-pod
+spec:
+  containers:
+  - name: my-container
+    image: busybox
+    env:  # Mảng các env var
+    - name: STATIC_VAR  # Tên biến (uppercase convention)
+      value: "hello world"  # Giá trị tĩnh
+    - name: CONFIG_VAR
+      valueFrom:
+        configMapKeyRef:  # Từ ConfigMap
+          name: my-configmap
+          key: app.key
+          optional: false  # Default false, error nếu không tồn tại
+    - name: SECRET_VAR
+      valueFrom:
+        secretKeyRef:  # Từ Secret
+          name: my-secret
+          key: password
+    - name: POD_NAME  # Downward API
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name  # Các field: metadata.name, status.podIP, spec.nodeName, etc.
+    - name: CPU_LIMIT  # Resource field
+      valueFrom:
+        resourceFieldRef:
+          containerName: my-container  # Optional
+          resource: limits.cpu
+    envFrom:  # Inject toàn bộ ConfigMap/Secret làm env vars (prefix optional)
+    - configMapRef:
+        name: my-configmap
+    - secretRef:
+        name: my-secret
+        prefix: DB_  # Optional, prefix keys
+```
+
+### Args
+
+
+### CLIs
+
+**Tạo Pod với env vars (imperative)**:
+
+`kubectl run env-pod --image=busybox --env="KEY=value" --command -- sleep infinity`
+
+**Xem env vars trong Pod**:
+
+Description: liệt kê tất cả env
+
+`kubectl exec env-pod -- env`
+
+**Describe Pod**:
+
+Description: xem env trong spec
+
+`kubectl describe pod env-pod`
+
+**Edit Pod**:
+
+Description: sửa env, nhưng Pod immutable nên thường recreate
+
+`kubectl edit pod env-pod`
+
+**Generate YAML**:
+
+`kubectl run --dry-run=client -o yaml --env="KEY=val" --command -- echo hello > pod.yaml`
+
+## ReplicaSet
+
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: my-rs
+  labels:
+    app: myapp
+spec:
+  replicas: 3  # Số lượng Pods
+  selector:
+    matchLabels:  # Equality-based
+      app: myapp
+    matchExpressions:  # Set-based (optional)
+    - key: tier
+      operator: In
+      values: [frontend]
+  template:  # Pod template
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14
+        ports:
+        - containerPort: 80
+```
+
+apply: `kubectl apply -f rs.yaml`
+
+### CLIs
+
+**Tạo Imperative**:
+
+`kubectl create rs my-rs --image=nginx --replicas=3`
+
+note: ít dùng
+
+
+**Get/List**:
+
+`kubectl get rs`
+
+**Scale**:
+
+`kubectl scale rs my-rs --replicas=5`
+
+
+## Deployment
+
+Description: Cấu trúc mở rộng từ RS
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:  # Giống RS
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14
+  strategy:  # Update strategy
+    type: RollingUpdate  # Hoặc Recreate (kill all then create)
+    rollingUpdate:
+      maxSurge: 25%  # Số Pods thêm tối đa (int hoặc %)
+      maxUnavailable: 25%  # Số Pods unavailable tối đa
+  minReadySeconds: 10  # Thời gian chờ Pod ready trước khi coi success
+  revisionHistoryLimit: 10  # Giữ bao nhiêu RS cũ cho rollback
+  paused: false  # Pause rollout (optional)
+```
+
+### CLIs
+
+**Tạo Imperative**:
+
+`kubectl create deployment my-dep --image=nginx --replicas=3`
+
+
+**Get/List**:
+
+`kubectl get deployments`
+`kubectl get deployments -o wide`
+
+
+**Describe**:
+
+`kubectl describe deployment my-dep`
+
+**Scale**:
+
+`kubectl scale deployment my-dep --replicas=5`
+
+**Update**:
+
+`kubectl set image deployment/my-dep nginx=nginx:1.16` 
+note: trigger rollout
+
+edit YAML: `kubectl edit deployment my-dep`
+
+
+**Rollout Management**:
+
+Status: `kubectl rollout status deployment/my-dep`
+History: `kubectl rollout status deployment/my-dep`
+Rollback: `kubectl rollout undo deployment/my-dep --to-revision=2`
+Pause/Resume: `kubectl rollout pause deployment/my-dep` / `kubectl rollout resume deployment/my-dep`
+
+**Delete**:
+
+`kubectl delete deployment my-dep`
+note: xóa cascade RS và Pods
+
