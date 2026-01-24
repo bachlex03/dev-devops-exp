@@ -45,6 +45,10 @@ ref: "https://devops.vn/posts/bai-1-gioi-thieu-kubernetes-va-khai-niem-cluster-c
   - **Why (Tại sao)**: Để đóng gói một hoặc nhiều container (như ứng dụng chính và sidecar) **dùng chung địa chỉ IP, bộ lưu trữ và vòng đời**.
   - **How (Như thế nào)**: Pod được định nghĩa trong các tệp YAML và được lập lịch lên các Node bởi bộ lập lịch (scheduler) của Kubernetes.
 
+> **Note on Volumes & mountPath**:
+> - **en**: The `mountPath` is **local to each container**. Different containers in the same Pod can mount the **same volume** at **different paths**. For example, an init-container can mount a volume at `/work-dir` to write data, while the main container mounts it at `/app/data` to read that same data.
+> - **vi**: `mountPath` là **riêng biệt cho từng container**. Các container khác nhau trong cùng một Pod có thể gắn (mount) **cùng một volume** tại **các đường dẫn khác nhau**. Ví dụ: một init-container có thể mount volume tại `/work-dir` để ghi dữ liệu, trong khi container chính mount volume đó tại `/app/data` để đọc cùng một dữ liệu đó.
+
 ## Node
 - **en**:
   - **What**: A worker machine in Kubernetes; it can be a virtual or physical machine.
