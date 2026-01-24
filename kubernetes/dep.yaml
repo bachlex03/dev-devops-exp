@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.14
+  strategy: # Update strategy
+    type: RollingUpdate # Hoặc Recreate (kill all then create)
+    rollingUpdate:
+      maxSurge: 25% # Số Pods thêm tối đa (int hoặc %)
+      maxUnavailable: 25% # Số Pods unavailable tối đa
+  minReadySeconds: 10 # Thời gian chờ Pod ready trước khi coi success
+  revisionHistoryLimit: 10 # Giữ bao nhiêu RS cũ cho rollback
+  paused: false # Pause rollout (optional)

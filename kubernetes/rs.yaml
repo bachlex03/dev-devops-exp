@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: my-rs
+  labels:
+    app: myapp
+spec:
+  replicas: 3 # Số lượng Pods
+  selector: 
+    matchLabels: # Equality-based
+      app: myapp
+    matchExpressions: # Set-based (optional)
+      - key: tier
+        operator: In
+        values: [frontend]
+  template: # Pod template
+    metadata:
+      labels:
+        app: myapp
+        tier: frontend
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.14
+          ports:
+            - containerPort: 80

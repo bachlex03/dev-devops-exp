@@ -1,0 +1,473 @@
+# KUBERNETES BASIC V2
+
+Description: All things you need to know as a beginner.
+## Table of Contents
+
+- [Kubernetes](#kubernetes)
+
+# Core Concepts
+
+## Kubernetes
+- **en**:
+  - **What**: Kubernetes (K8s) is an open-source container orchestration platform that automates the deployment, scaling, and management of containerized applications.
+  - **Who**: Originally designed by Google, it is now maintained by the Cloud Native Computing Foundation (CNCF).
+  - **Where**: It can run on-premise, in public clouds, or in hybrid environments.
+  - **When**: Use Kubernetes when you need to manage multiple containers across multiple hosts, handle automatic scaling, or ensure high availability.
+  - **Why**: It significantly reduces the complexity of managing microservices, ensures self-healing, and provides efficient resource utilization.
+  - **How**: It works by defining a "desired state" in YAML files, which the control plane continuously monitors and maintains across worker nodes.
+- **vi**:
+  - **What (Cái gì)**: Kubernetes (K8s) là một nền tảng điều phối container mã nguồn mở giúp tự động hóa việc triển khai, mở rộng và quản lý các ứng dụng container hóa.
+  - **Who (Ai)**: Ban đầu được thiết kế bởi Google, hiện nay được duy trì bởi Cloud Native Computing Foundation (CNCF).
+  - **Where (Ở đâu)**: Có thể chạy tại chỗ (on-premise), trên các đám mây công cộng (public cloud), hoặc trong môi trường hỗn hợp (hybrid).
+  - **When (Khi nào)**: Sử dụng Kubernetes khi bạn cần quản lý nhiều container trên nhiều host, xử lý việc tự động mở rộng, hoặc đảm bảo tính sẵn sàng cao.
+  - **Why (Tại sao)**: Nó giúp giảm đáng kể sự phức tạp khi quản lý microservices, đảm bảo khả năng tự phục hồi (self-healing) và cung cấp khả năng sử dụng tài nguyên hiệu quả.
+  - **How (Như thế nào)**: Hoạt động bằng cách định nghĩa "trạng thái mong muốn" trong các tệp YAML, sau đó thành phần điều khiển (control plane) sẽ liên tục giám sát và duy trì trạng thái đó trên các worker node.
+
+> **Note**:
+> - **en**: **Hosts** in Kubernetes refer to **Nodes** (worker machines), which can be either physical machines or virtual machines.
+> - **vi**: **Hosts** trong Kubernetes dùng để chỉ các **Nodes** (máy worker), có thể là máy vật lý hoặc máy ảo.
+
+### Benifits
+
+ref: "https://devops.vn/posts/bai-1-gioi-thieu-kubernetes-va-khai-niem-cluster-cho-ckad/"
+
+## Pod
+- **en**:
+  - **What**: The smallest, most basic deployable object in Kubernetes. It represents a single instance of a running process in your cluster.
+  - **Where**: Runs on an individual Node.
+  - **When**: Created by controllers like Deployments or StatefulSets to run your application containers.
+  - **Why**: To encapsulate one or more containers (like an application container and a sidecar) that **share the same network IP, storage, and lifecycle**.
+  - **How**: Pods are defined in YAML manifests and scheduled onto Nodes by the Kubernetes scheduler.
+- **vi**:
+  - **What (Cái gì)**: Đối tượng nhỏ nhất và cơ bản nhất có thể triển khai trong Kubernetes. Nó đại diện cho một instance duy nhất của một tiến trình đang chạy trong cluster.
+  - **Where (Ở đâu)**: Chạy trên một Node cụ thể.
+  - **When (Khi nào)**: Được tạo bởi các controller như Deployment hoặc StatefulSet để chạy các ứng dụng container của bạn.
+  - **Why (Tại sao)**: Để đóng gói một hoặc nhiều container (như ứng dụng chính và sidecar) **dùng chung địa chỉ IP, bộ lưu trữ và vòng đời**.
+  - **How (Như thế nào)**: Pod được định nghĩa trong các tệp YAML và được lập lịch lên các Node bởi bộ lập lịch (scheduler) của Kubernetes.
+
+## Node
+- **en**:
+  - **What**: A worker machine in Kubernetes; it can be a virtual or physical machine.
+  - **Where**: Part of a Kubernetes cluster.
+  - **When**: Added to the cluster to provide compute power; can be scaled up or down based on load.
+  - **Why**: To provide the necessary environment (CPU, RAM, network) to run Pods.
+  - **How**: Each Node runs a `kubelet` (agent), a `container runtime` (like Docker/containerd), and a `kube-proxy` for networking.
+- **vi**:
+  - **What (Cái gì)**: Một máy worker trong Kubernetes; có thể là máy ảo hoặc máy vật lý.
+  - **Where (Ở đâu)**: Là một phần của cụm (cluster) Kubernetes.
+  - **When (Khi nào)**: Được thêm vào cụm để cung cấp sức mạnh tính toán; có thể mở rộng hoặc thu hẹp tùy theo tải.
+  - **Why (Tại sao)**: Cung cấp môi trường cần thiết (CPU, RAM, mạng) để chạy các Pod.
+  - **How (Như thế nào)**: Mỗi Node chạy một `kubelet` (agent), một `container runtime` (như Docker/containerd) và một `kube-proxy` để quản lý mạng.
+
+## Cluster
+- **en**:
+  - **What**: A set of Node machines for running containerized applications managed by Kubernetes.
+  - **Where**: Can be hosted on-premise, in the cloud (EKS, GKE, AKS), or locally (Minikube, Kind).
+  - **Why**: To provide a unified, highly available platform that can manage applications at scale across multiple machines.
+  - **How**: Consists of at least one **Control Plane** (the brain) and multiple **Worker Nodes** (where apps run).
+- **vi**:
+  - **What (Cái gì)**: Một tập hợp các máy Node để chạy các ứng dụng container hóa được quản lý bởi Kubernetes.
+  - **Where (Ở đâu)**: Có thể được lưu trữ tại chỗ (on-premise), trên đám mây (EKS, GKE, AKS), hoặc cục bộ (Minikube, Kind).
+  - **Why (Tại sao)**: Cung cấp một nền tảng thống nhất, có tính sẵn sàng cao để quản lý ứng dụng trên quy mô lớn trên nhiều máy khác nhau.
+  - **How (Như thế nào)**: Bao gồm ít nhất một **Control Plane** (bộ não điều khiển) và nhiều **Worker Nodes** (nơi ứng dụng thực sự chạy).
+
+# Storages (Persistent Volumes & Persistent Volume Claims)
+- **en**:
+  - **What**: **PersistentVolume (PV)** is a piece of storage in the cluster provisioned by an administrator or dynamically via Storage Classes. **PersistentVolumeClaim (PVC)** is a request for storage by a user (Pod).
+  - **Where**: PVs are cluster-wide resources, whereas PVCs exist within a specific **Namespace**.
+  - **When**: Use them when your application needs to store data that survives Pod restarts, rescheduling, or updates (e.g., Databases).
+  - **Why**: To decouple storage implementation from storage consumption. Developers don't need to know the underlying storage tech (NFS, AWS EBS), they just request "10GB of storage" via a PVC.
+  - **How**: A user creates a PVC. Kubernetes looks for a matching PV (size, access mode). If found, they are "bound" together. The Pod then mounts this PVC as a volume.
+- **vi**:
+  - **What (Cái gì)**: **PersistentVolume (PV)** là phần không gian lưu trữ trong cụm được cung cấp bởi quản trị viên hoặc cấp phát động qua Storage Class. **PersistentVolumeClaim (PVC)** là yêu cầu sử dụng lưu trữ từ phía người dùng (hoặc Pod).
+  - **Where (Ở đâu)**: PV là tài nguyên cấp cụm (cluster-wide), trong khi PVC tồn tại trong một **Namespace** cụ thể.
+  - **When (Khi nào)**: Sử dụng khi ứng dụng cần lưu trữ dữ liệu bền vững, không bị mất đi khi Pod khởi động lại, được lập lịch lại hoặc cập nhật (ví dụ: Cơ sở dữ liệu).
+  - **Why (Tại sao)**: Để tách biệt việc triển khai lưu trữ khỏi việc tiêu thụ lưu trữ. Lập trình viên không cần biết công nghệ lưu trữ bên dưới (NFS, AWS EBS), họ chỉ cần yêu cầu "10GB lưu trữ" thông qua PVC.
+  - **How (Như thế nào)**: Người dùng tạo một PVC. Kubernetes tìm kiếm một PV phù hợp (dung lượng, chế độ truy cập). Nếu tìm thấy, chúng sẽ được "liên kết" (bound) với nhau. Pod sau đó sẽ gắn (mount) PVC này như một volume.
+
+
+# Other Concepts
+
+## Deployment & ReplicaSet
+- **en**:
+  - **What**: **ReplicaSet** ensures a stable set of replica Pods running at any given time (ensure the right number of pods are running). **Deployment** is a higher-level controller that manages ReplicaSets to provide declarative updates (rolling updates) and rollbacks and desired state (number of pods, replica sets).
+  - **Where**: Deployed within a Kubernetes Cluster.
+  - **When**: Use **Deployment** for stateless applications that need automatic scaling, high availability, and versioned updates. It is the standard way to deploy apps; ReplicaSets are rarely managed directly.
+  - **Why**: To automate application deployment, maintain the desired number of replicas (self-healing), and manage seamless updates without downtime.
+  - **How**: You define the desired state in a YAML manifest (e.g., image version, replica count). The Deployment controller handles the transition from the current state to the desired state by creating and scaling ReplicaSets.
+- **vi**:
+  - **What (Cái gì)**: **ReplicaSet** đảm bảo một số lượng Pod bản sao (replica) nhất định luôn chạy ổn định (đảm bảo đúng số lượng pod đang chạy). **Deployment** là một controller cấp cao hơn, quản lý các ReplicaSet để cung cấp các bản cập nhật khai báo (rolling updates) và khả năng hoàn tác (rollbacks).
+  - **Where (Ở đâu)**: Được triển khai bên trong cụm (Cluster) Kubernetes.
+  - **When (Khi nào)**: Sử dụng **Deployment** cho các ứng dụng stateless (không lưu trạng thái) cần tự động mở rộng, có tính sẵn sàng cao và cập nhật theo phiên bản. Đây là cách tiêu chuẩn để triển khai ứng dụng; ReplicaSet hiếm khi được quản lý trực tiếp.
+  - **Why (Tại sao)**: Để tự động hóa việc triển khai ứng dụng, duy trì số lượng bản sao mong muốn (tự phục hồi) và quản lý cập nhật mượt mà không gây gián đoạn dịch vụ.
+  - **How (Như thế nào)**: Bạn định nghĩa trạng thái mong muốn trong tệp YAML (ví dụ: phiên bản image, số lượng bản sao). Deployment controller sẽ xử lý quá trình chuyển đổi từ trạng thái hiện tại sang trạng thái mong muốn bằng cách tạo và điều chỉnh các ReplicaSet.
+
+## Configmaps and Secrets
+- **en**:
+  - **What**: **ConfigMap** is an API object used to store non-confidential data in key-value pairs. **Secret** is a similar object used to store sensitive data (like passwords, OAuth tokens, or ssh keys).
+  - **Where**: Stored in the Kubernetes cluster's etcd and can be mounted into Pods as environment variables or files in a volume.
+  - **When**: Use **ConfigMap** for application configuration files or command-line arguments. Use **Secret** for any sensitive data that shouldn't be in plain text in Pod specs or container images.
+  - **Why**: To separate configuration settings from application code (Decoupling) and to manage sensitive information securely without hardcoding it.
+  - **How**: You create them via YAML or `kubectl create`, then reference them in a Pod's `spec.containers.env` or `spec.volumes` section.
+- **vi**:
+  - **What (Cái gì)**: **ConfigMap** là một đối tượng API dùng để lưu trữ dữ liệu không bảo mật dưới dạng cặp key-value. **Secret** là một đối tượng tương tự nhưng dùng để lưu trữ dữ liệu nhạy cảm (như mật khẩu, OAuth tokens, hoặc ssh keys).
+  - **Where (Ở đâu)**: Được lưu trữ trong etcd của cụm Kubernetes và có thể được gắn (mount) vào Pod dưới dạng biến môi trường hoặc tệp trong một volume.
+  - **When (Khi nào)**: Sử dụng **ConfigMap** cho các tệp cấu hình ứng dụng hoặc tham số dòng lệnh. Sử dụng **Secret** cho bất kỳ dữ liệu nhạy cảm nào không nên để ở dạng văn bản thuần túy trong Pod spec hoặc container image.
+  - **Why (Tại sao)**: Để tách biệt các thiết lập cấu hình khỏi mã nguồn ứng dụng (Decoupling) và quản lý thông tin nhạy cảm một cách an toàn mà không cần viết cứng (hardcode) vào mã.
+  - **How (Như thế nào)**: Bạn tạo chúng qua YAML hoặc lệnh `kubectl create`, sau đó tham chiếu chúng trong phần `spec.containers.env` hoặc `spec.volumes` của Pod.
+
+> **Note**:
+> - **en**: 
+>   - **Naming**: Kubernetes resource names (like ConfigMaps) must be lowercase and follow RFC 1123 (e.g., `my-configmap`, NOT `my-ConfigMap`).
+>   - **Binary Data**: Use `binaryData` for base64-encoded content. Ensure the base64 string is valid and not a placeholder.
+> - **vi**:
+>   - **Đặt tên**: Tên tài nguyên Kubernetes (như ConfigMaps) phải viết thường và tuân theo chuẩn RFC 1123 (ví dụ: `my-configmap`, KHÔNG phải `my-ConfigMap`).
+>   - **Dữ liệu nhị phân**: Sử dụng `binaryData` cho nội dung được mã hóa base64. Đảm bảo chuỗi base64 hợp lệ và không phải là text giữ chỗ.
+
+
+### Benifits of ConfigMaps and Secrets
+
+ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va-secret-trong-yaml/)
+
+
+## Networking and Load Balancing
+- **en**:
+  - **What**: An abstraction layer that enables communication between Pods, Services, and external traffic. Main objects include **Services** (ClusterIP, NodePort, LoadBalancer) for internal/external access and **Ingress** for HTTP/HTTPS routing.
+  - **Where**: Operates at the cluster level and at the cluster edge.
+  - **When**: Use a **Service** when you need a stable entry point (IP/DNS) for ephemeral Pods. Use **Ingress** when you need to expose multiple services under a single IP and manage SSL/TLS.
+  - **Why**: Pod IPs are dynamic and change if they restart. Networking objects provide a persistent identity and automatic Load Balancing across Pod replicas.
+  - **How**: Services use **Selectors** to track Pods; `kube-proxy` manages the routing logic. Ingress controllers (like Nginx) act as reverse proxies to route traffic based on hostnames or paths.
+- **vi**:
+  - **What (Cái gì)**: Một lớp trừu tượng cho phép giao tiếp giữa các Pod, Service và lưu lượng bên ngoài. Các đối tượng chính bao gồm **Service** (ClusterIP, NodePort, LoadBalancer) để truy cập nội bộ/bên ngoài và **Ingress** để điều hướng HTTP/HTTPS.
+  - **Where (Ở đâu)**: Hoạt động ở cấp độ cụm (cluster) và tại biên của cụm.
+  - **When (Khi nào)**: Sử dụng **Service** khi bạn cần một điểm truy cập ổn định (IP/DNS) cho các Pod có tính chất tạm thời. Sử dụng **Ingress** khi bạn cần lộ diện nhiều service dưới một IP duy nhất và quản lý SSL/TLS.
+  - **Why (Tại sao)**: IP của Pod là động và sẽ thay đổi nếu chúng khởi động lại. Các đối tượng Networking cung cấp một định danh bền vững và tự động Cân bằng tải (Load Balancing) giữa các bản sao của Pod.
+  - **How (Như thế nào)**: Service sử dụng **Selector** để theo dõi các Pod; `kube-proxy` quản lý logic điều hướng. Ingress controller (như Nginx) đóng vai trò là reverse proxy để điều hướng lưu lượng dựa trên hostname hoặc đường dẫn.
+
+
+## Resource Quotas
+- **en**:
+  - **What**: A tool to provide constraints that limit aggregate resource consumption per Namespace (e.g., total CPU, Memory, or number of Pods).
+  - **Where**: Applied within a specific **Namespace**.
+  - **When**: Use when multiple teams or projects share the same cluster to prevent one team from consuming all available resources (Noisy Neighbor problem).
+  - **Why**: To ensure fair resource distribution across the cluster and to manage costs and capacity efficiently.
+  - **How**: Defined in a YAML file as a `ResourceQuota` object and applied to a namespace. If a request exceeds the quota, the Kubernetes API server will reject the creation of the resource.
+- **vi**:
+  - **What (Cái gì)**: Một công cụ cung cấp các ràng buộc nhằm giới hạn tổng mức tiêu thụ tài nguyên trên mỗi Namespace (ví dụ: tổng CPU, Memory, hoặc số lượng Pod).
+  - **Where (Ở đâu)**: Được áp dụng bên trong một **Namespace** cụ thể.
+  - **When (Khi nào)**: Sử dụng khi có nhiều nhóm hoặc dự án dùng chung một cụm (cluster) để ngăn chặn một nhóm tiêu thụ hết tất cả tài nguyên có sẵn (vấn đề "Noisy Neighbor").
+  - **Why (Tại sao)**: Để đảm bảo phân phối tài nguyên công bằng trong cụm và quản lý chi phí cũng như dung lượng một cách hiệu quả.
+  - **How (Như thế nào)**: Được định nghĩa trong tệp YAML dưới dạng đối tượng `ResourceQuota` và áp dụng cho một namespace. Nếu một yêu cầu vượt quá hạn ngạch, API server của Kubernetes sẽ từ chối việc tạo tài nguyên đó.
+
+## Stateful Apps and Stateless Apps
+- **en**:
+  - **What**: **Stateless Apps** do not store client data from one session to use in the next (e.g., Nginx, web frontends). **Stateful Apps** require the system to remember previous interactions and store persistent data (e.g., Databases like PostgreSQL, Redis, MongoDB).
+  - **Where**: Managed in Kubernetes using **Deployments** (Stateless) and **StatefulSets** (Stateful).
+  - **When**: Use **Stateless** for applications that can be easily scaled up or down without worry about data loss. Use **Stateful** for applications that require stable network identities or persistent storage across restarts.
+  - **Why**: To distinguish between apps that are interchangeable (Stateless) and those that are unique/dependent on history (Stateful), allowing for proper resource management and storage strategy.
+  - **How**: Stateless apps are scaled by increasing replica counts in a Deployment. Stateful apps use **StatefulSets** which provide stable hostnames (pod-0, pod-1) and link each pod to its own **PersistentVolume**.
+- **vi**:
+  - **What (Cái gì)**: **Stateless Apps** không lưu trữ dữ liệu của người dùng từ phiên này để sử dụng cho phiên sau (ví dụ: Nginx, web frontend). **Stateful Apps** yêu cầu hệ thống phải nhớ các tương tác trước đó và lưu trữ dữ liệu bền vững (ví dụ: Cơ sở dữ liệu như PostgreSQL, Redis, MongoDB).
+  - **Where (Ở đâu)**: Được quản lý trong Kubernetes bằng **Deployments** (cho Stateless) và **StatefulSets** (cho Stateful).
+  - **When (Khi nào)**: Sử dụng **Stateless** cho các ứng dụng có thể dễ dàng mở rộng hoặc thu hẹp mà không lo mất dữ liệu. Sử dụng **Stateful** cho các ứng dụng yêu cầu định danh mạng ổn định hoặc bộ nhớ lưu trữ bền vững qua các lần khởi động lại.
+  - **Why (Tại sao)**: Để phân biệt giữa các ứng dụng có thể thay thế lẫn nhau (Stateless) và những ứng dụng là duy nhất/phụ thuộc vào lịch sử dữ liệu (Stateful), từ đó có chiến lược quản lý tài nguyên và lưu trữ phù hợp.
+  - **How (Như thế nào)**: Các ứng dụng Stateless được mở rộng bằng cách tăng số lượng bản sao trong Deployment. Các ứng dụng Stateful sử dụng **StatefulSet** cung cấp hostname ổn định (pod-0, pod-1) và liên kết mỗi pod với một **PersistentVolume** riêng.
+
+
+## Patterns
+
+### Sidecar Pattern
+
+- **en**:
+  - **What**: A design pattern where a secondary container (the sidecar) is deployed alongside the main application container within the same Pod.
+  - **Where**: Implemented within a Kubernetes Pod, where both containers share the same lifecycle, network namespace, and storage volumes.
+  - **Why**: To extend or enhance the functionality of the main application without modifying its code (e.g., logging, monitoring, proxying).
+  - **How**: Defined in the Pod specification under the `containers` array, with shared volumes for data exchange if needed.
+
+- **vi**:
+  - **What (Cái gì)**: Một mẫu thiết kế trong đó một container phụ (sidecar) được triển khai cùng với container ứng dụng chính trong cùng một Pod.
+  - **Where (Ở đâu)**: Được triển khai bên trong một Kubernetes Pod, nơi cả hai container chia sẻ cùng vòng đời, không gian mạng (network namespace) và các ổ đĩa lưu trữ (volumes).
+  - **Why (Tại sao)**: Để mở rộng hoặc tăng cường chức năng của ứng dụng chính mà không cần sửa đổi mã nguồn của nó (ví dụ: thu thập log, giám sát, proxy).
+  - **How (Như thế nào)**: Được định nghĩa trong đặc tả Pod bên dưới mảng `containers`, sử dụng chung volumes để trao đổi dữ liệu nếu cần.
+
+### Adapter Pattern
+
+- **en**:
+  - **What**: A pattern that standardizes and transforms the output of the main application container to match a specific external format.
+  - **Where**: Part of a multi-container Pod, acting as an intermediate layer between the application and external systems like monitoring tools.
+  - **Why**: To ensure compatibility with unified monitoring or logging systems when the application itself produces non-standard output.
+  - **How**: The adapter container reads data from the main container (e.g., via a shared volume or local API) and serves it in the required format (e.g., Prometheus metrics).
+
+- **vi**:
+  - **What (Cái gì)**: Một mẫu thiết kế giúp tiêu chuẩn hóa và chuyển đổi đầu ra của container ứng dụng chính để phù hợp với một định dạng bên ngoài cụ thể.
+  - **Where (Ở đâu)**: Là một phần của Pod đa container, đóng vai trò là lớp trung gian giữa ứng dụng và các hệ thống bên ngoài như công cụ giám sát.
+  - **Why (Tại sao)**: Để đảm bảo khả năng tương thích với các hệ thống giám sát hoặc ghi log tập trung khi bản thân ứng dụng tạo ra đầu ra không chuẩn.
+  - **How (Như thế nào)**: Container adapter đọc dữ liệu từ container chính (ví dụ: qua volume dùng chung hoặc API nội bộ) và cung cấp nó dưới định dạng yêu cầu (ví dụ: Prometheus metrics).
+
+### Ambassador Pattern
+
+- **en**:
+  - **What**: A pattern where a container acts as a proxy for the main application to handle external communications.
+  - **Where**: Deployed within the same Pod as the application, representing the network interface for outbound or inbound traffic.
+  - **Why**: To simplify how the application connects to external services (e.g., database sharding, circuit breaking, service discovery).
+  - **How**: The application connects to `localhost` on a specific port, and the ambassador container routes that traffic to the appropriate external destination.
+
+- **vi**:
+  - **What (Cái gì)**: Một mẫu thiết kế trong đó một container đóng vai trò là proxy cho ứng dụng chính để xử lý các giao tiếp bên ngoài.
+  - **Where (Ở đâu)**: Được triển khai trong cùng một Pod với ứng dụng, đại diện cho giao diện mạng cho lưu lượng truy cập ra ngoài hoặc vào trong.
+  - **Why (Tại sao)**: Để đơn giản hóa cách ứng dụng kết nối với các dịch vụ bên ngoài (ví dụ: phân mảnh cơ sở dữ liệu - sharding, ngắt mạch - circuit breaking, phát hiện dịch vụ - service discovery).
+  - **How (Như thế nào)**: Ứng dụng kết nối tới `localhost` trên một cổng cụ thể, và container ambassador sẽ điều phối lưu lượng đó đến đích bên ngoài phù hợp.
+
+
+# CLIs
+
+-`kubectl config view`
+```bash
+PS D:\devops\dev-devops-exp> kubectl config view
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: C:\Users\BALE\.minikube\ca.crt
+    extensions:
+    - extension:
+        last-update: Wed, 21 Jan 2026 22:58:34 +07
+        provider: minikube.sigs.k8s.io
+        version: v1.37.0
+      name: cluster_info
+    server: https://127.0.0.1:53768
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    extensions:
+    - extension:
+        last-update: Wed, 21 Jan 2026 22:58:34 +07
+        provider: minikube.sigs.k8s.io
+        version: v1.37.0
+      name: context_info
+    namespace: default
+    user: minikube
+  name: minikube
+current-context: minikube
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user:
+    client-certificate: C:\Users\BALE\.minikube\profiles\minikube\client.crt
+    client-key: C:\Users\BALE\.minikube\profiles\minikube\client.key
+```
+
+`kubectl get pods -A -o wide`
+```bash
+NAMESPACE              NAME                                         READY   STATUS    RESTARTS      AGE   IP             NODE       NOMINATED NODE   READINESS GATES
+default                my-dep-b458fdbb4-9hzph                       1/1     Running   1 (26d ago)   29d   10.244.0.11    minikube   <none>           <none>
+kube-system            coredns-66bc5c9577-ms27t                     1/1     Running   1 (26d ago)   30d   10.244.0.13    minikube   <none>           <none>
+kube-system            etcd-minikube                                1/1     Running   1 (26d ago)   30d   192.168.49.2   minikube   <none>           <none>
+kube-system            kube-apiserver-minikube                      1/1     Running   1 (24h ago)   30d   192.168.49.2   minikube   <none>           <none>
+kube-system            kube-controller-manager-minikube             1/1     Running   1 (26d ago)   30d   192.168.49.2   minikube   <none>           <none>
+kube-system            kube-proxy-dwb5p                             1/1     Running   1 (26d ago)   30d   192.168.49.2   minikube   <none>           <none>
+kube-system            kube-scheduler-minikube                      1/1     Running   1 (26d ago)   30d   192.168.49.2   minikube   <none>           <none>
+kube-system            storage-provisioner                          1/1     Running   3 (24h ago)   30d   192.168.49.2   minikube   <none>           <none>
+kubernetes-dashboard   dashboard-metrics-scraper-77bf4d6c4c-wpn6h   1/1     Running   1 (26d ago)   30d   10.244.0.12    minikube   <none>           <none>
+kubernetes-dashboard   kubernetes-dashboard-855c9754f9-99cmn        1/1     Running   2 (24h ago)   30d   10.244.0.14    minikube   <none>           <none>
+```
+
+```bash
+PS D:\devops\dev-devops-exp> kubectl describe pod my-dep-b458fdbb4-9hzph
+Name:             my-dep-b458fdbb4-9hzph
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             minikube/192.168.49.2
+Start Time:       Wed, 24 Dec 2025 14:16:10 +0700
+Labels:           app=my-dep
+                  pod-template-hash=b458fdbb4
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.11
+IPs:
+  IP:           10.244.0.11
+Controlled By:  ReplicaSet/my-dep-b458fdbb4
+Containers:
+  nginx:
+    Container ID:   docker://c367deff3816c069cd39c2955c6ff2417245fe8c5cb004cf390ca0801d3809d2
+    Image:          nginx
+    Image ID:       docker-pullable://nginx@sha256:c881927c4077710ac4b1da63b83aa163937fb47457950c267d92f7e4dedf4aec
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Wed, 21 Jan 2026 22:59:04 +0700
+    Last State:     Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Wed, 24 Dec 2025 14:16:14 +0700
+      Finished:     Sat, 27 Dec 2025 02:36:54 +0700
+    Ready:          True
+    Restart Count:  1
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-smwkq (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       True
+  ContainersReady             True
+  PodScheduled                True
+Volumes:
+  kube-api-access-smwkq:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:                      <none>
+```
+
+`kubectl get nodes`
+```bash
+NAME       STATUS   ROLES           AGE   VERSION
+minikube   Ready    control-plane   30d   v1.34.0
+```
+
+`kubectl get configmap`
+```bash
+NAME               DATA   AGE
+kube-root-ca.crt   1      30d
+my-cm              2      82m
+my-configmap       3      59m
+```
+
+`kubectl get secret`
+```bash
+NAME        TYPE     DATA   AGE
+my-secret   Opaque   3      45m
+```
+
+
+`PS D:\devops\dev-devops-exp> `kubectl describe cm my-cm`
+
+```bash
+Name:         my-cm
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+key2:
+----
+value2
+key1:
+----
+value1
+
+BinaryData
+====
+
+Events:  <none>
+```
+
+`kubectl describe secret my-secret`
+
+```bash
+Name:         my-secret
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Type:  Opaque
+
+Data
+====
+api-key:   7 bytes
+password:  11 bytes
+username:  5 bytes
+```
+
+
+`kubectl describe deployment my-deployment`
+
+```bash
+Name:                   my-deployment
+Namespace:              default
+CreationTimestamp:      Sat, 24 Jan 2026 12:43:17 +0700
+Labels:                 <none>
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=myapp
+Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        10
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=myapp
+  Containers:
+   nginx:
+    Image:         nginx:1.14
+    Port:          <none>
+    Host Port:     <none>
+    Environment:   <none>
+    Mounts:        <none>
+  Volumes:         <none>
+  Node-Selectors:  <none>
+  Tolerations:     <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  my-rs (0/0 replicas created)
+NewReplicaSet:   my-deployment-5486565dbf (3/3 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  74s   deployment-controller  Scaled up replica set my-deployment-5486565dbf from 0 to 1
+  Normal  ScalingReplicaSet  63s   deployment-controller  Scaled down replica set my-rs from 3 to 2
+  Normal  ScalingReplicaSet  63s   deployment-controller  Scaled up replica set my-deployment-5486565dbf from 1 to 2
+  Normal  ScalingReplicaSet  52s   deployment-controller  Scaled down replica set my-rs from 2 to 1
+  Normal  ScalingReplicaSet  52s   deployment-controller  Scaled up replica set my-deployment-5486565dbf from 2 to 3
+  Normal  ScalingReplicaSet  40s   deployment-controller  Scaled down replica set my-rs from 1 to 0
+```
+
+
+```bash
+PS D:\devops\dev-devops-exp> kubectl rollout status deployment/my-deployment
+deployment "my-deployment" successfully rolled out
+PS D:\devops\dev-devops-exp> kubectl set image deployment/my-deployment nginx=nginx:1.16
+deployment.apps/my-deployment image updated
+PS D:\devops\dev-devops-exp> kubectl rollout status deployment/my-deployment
+Waiting for deployment "my-deployment" rollout to finish: 3 out of 5 new replicas have been updated...
+Waiting for deployment "my-deployment" rollout to finish: 3 out of 5 new replicas have been updated...
+Waiting for deployment "my-deployment" rollout to finish: 3 out of 5 new replicas have been updated...
+Waiting for deployment "my-deployment" rollout to finish: 3 out of 5 new replicas have been updated...
+Waiting for deployment "my-deployment" rollout to finish: 3 out of 5 new replicas have been updated...
+Waiting for deployment "my-deployment" rollout to finish: 4 out of 5 new replicas have been updated...
+Waiting for deployment "my-deployment" rollout to finish: 4 out of 5 new replicas have been updated...
+Waiting for deployment "my-deployment" rollout to finish: 4 out of 5 new replicas have been updated...
+Waiting for deployment "my-deployment" rollout to finish: 4 out of 5 new replicas have been updated...
+Waiting for deployment "my-deployment" rollout to finish: 4 out of 5 new replicas have been updated...
+Waiting for deployment "my-deployment" rollout to finish: 4 out of 5 new replicas have been updated...
+Waiting for deployment "my-deployment" rollout to finish: 2 old replicas are pending termination...
+Waiting for deployment "my-deployment" rollout to finish: 2 old replicas are pending termination...
+Waiting for deployment "my-deployment" rollout to finish: 2 old replicas are pending termination...
+Waiting for deployment "my-deployment" rollout to finish: 2 old replicas are pending termination...
+Waiting for deployment "my-deployment" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "my-deployment" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "my-deployment" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "my-deployment" rollout to finish: 4 of 5 updated replicas are available...
+deployment "my-deployment" successfully rolled out
+PS D:\devops\dev-devops-exp> kubectl rollout history deployment/my-deployment                                     
+deployment.apps/my-deployment 
+REVISION  CHANGE-CAUSE
+0         <none>
+1         <none>
+2         <none>
+
+PS D:\devops\dev-devops-exp> kubectl rollout undo deployment/my-deployment
+deployment.apps/my-deployment rolled back
+```

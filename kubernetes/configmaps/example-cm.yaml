@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-configmap
+data:
+  key1: value1
+  config.properties: | # multi-line file
+    key2=value2
+    key3=value3
+binaryData:       # cho binary, base64-encoded
+  key4: dmFsdWU0Cg== # base64 for "value4"
+immutable: true   # make the ConfigMap immutable (optional)

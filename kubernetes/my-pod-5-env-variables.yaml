@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod-5
+  labels:
+    name: my-pod-5-label
+spec:
+  containers:
+    - name: my-container-5
+      image: alpine
+      resources:
+        limits:
+          cpu: "200m"
+      command: ["/bin/sh"] # Override ENTRYPOINT
+      args: ["-c", "echo $STATIC_VAR $CONFIG_VAR $SECRET_VAR $POD_NAME $CPU_LIMIT && sleep 60"] # Override CMD, có thể dùng env vars
+      env:
+        - name: STATIC_VAR
+          value: "Hello World"
+        - name: CONFIG_VAR
+          valueFrom:
+            configMapKeyRef: # Từ ConfigMap
+              name: my-configmap
+              key: app.key
+              optional: false # Default false, error nếu không tồn tại
+        - name: SECRET_VAR
+          valueFrom:
+            secretKeyRef:
+              name: my-secret
+              key: password
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name # Các field: metadata.name, status.podIP, spec.nodeName, etc.
+        - name: CPU_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: my-container-5
+              resource: limits.cpu
+      envFrom: # Inject toàn bộ ConfigMap/Secret làm env vars (prefix optional)
+        - configMapRef:
+            name: my-configmap
+        - secretRef:
+            name: my-secret
+          prefix: DB_ # Optional, prefix keys
