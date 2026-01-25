@@ -206,9 +206,35 @@ ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va
   - **When (Khi nào)**: Chỉ diễn ra trong quá trình khởi động ban đầu.
   - **How (Như thế nào)**: Nó sẽ tạm dừng các Liveness và Readiness probe cho đến khi nó thành công. Sau khi thành công, các probe kia mới bắt đầu làm việc.
 
-> **Check Mechanisms**:
-> - **en**: Can use `httpGet` (standard HTTP request), `tcpSocket` (port check), or `exec` (running a command inside).
-> - **vi**: Có thể sử dụng `httpGet` (gửi request HTTP), `tcpSocket` (kiểm tra cổng TCP), hoặc `exec` (chạy một câu lệnh bên trong).
+### Probe Check Mechanisms
+- **en**:
+  - **Exec**: Runs a command inside the container. Success is exit code 0. Use for non-networked apps or local file checks.
+  - **HTTP GET**: Performs an HTTP request. Success is status code 200-399. The standard choice for web apps and APIs.
+  - **TCP Socket**: Attempts to open a TCP connection to a port. Success if port is open. Use for DBs, Redis, or non-HTTP services.
+  - **gRPC**: Performs a gRPC health check (v1.24+). Success if status is `SERVING`. Native choice for gRPC-based microservices.
+- **vi**:
+  - **Exec (Thực thi)**: Chạy một lệnh trong container. Thành công nếu exit code là 0. Dùng cho app không có mạng hoặc kiểm tra file cục bộ.
+  - **HTTP GET**: Gửi một request HTTP. Thành công nếu status code từ 200-399. Là lựa chọn tiêu chuẩn cho web app và API.
+  - **TCP Socket**: Thử mở kết nối TCP tới một cổng. Thành công nếu cổng đó đang mở. Dùng cho DB, Redis hoặc các dịch vụ không phải HTTP.
+  - **gRPC**: Thực hiện kiểm tra sức khỏe qua gRPC (bản v1.24+). Thành công nếu trạng thái là `SERVING`. Lựa chọn tối ưu cho gRPC microservices.
+
+### Probe Configuration Parameters
+- **en**:
+  - **initialDelaySeconds**: Number of seconds after the container has started before liveness or readiness probes are initiated. (Default: 0).
+  - **periodSeconds**: How often (in seconds) to perform the probe. (Default: 10. Minimum: 1).
+  - **timeoutSeconds**: Number of seconds after which the probe times out. (Default: 1. Minimum: 1).
+  - **successThreshold**: Minimum consecutive successes for the probe to be considered successful after having failed. (Default: 1. Must be 1 for liveness).
+  - **failureThreshold**: When a probe fails, Kubernetes will try failureThreshold times before giving up. (Default: 3. Minimum: 1).
+- **vi**:
+  - **initialDelaySeconds**: Số giây chờ sau khi container khởi động trước khi bắt đầu thực hiện các probe. (Mặc định: 0).
+  - **periodSeconds**: Khoảng thời gian giữa các lần thực hiện probe (tính bằng giây). (Mặc định: 10. Tối thiểu: 1).
+  - **timeoutSeconds**: Số giây tối đa để đợi kết quả từ probe trước khi coi là thất bại. (Mặc định: 1. Tối thiểu: 1).
+  - **successThreshold**: Số lần thành công liên tiếp tối thiểu để coi probe là thành công sau khi đã từng thất bại. (Mặc định: 1. Phải là 1 đối với liveness).
+  - **failureThreshold**: Số lần thất bại liên tiếp tối đa trước khi Kubernetes coi là thất bại hoàn toàn và thực hiện hành động (như restart). (Mặc định: 3. Tối thiểu: 1).
+
+> **Pro-Tip**:
+> - **en**: Use a high `failureThreshold` with a short `periodSeconds` for stable monitoring without accidental restarts.
+> - **vi**: Sử dụng `failureThreshold` cao kết hợp với `periodSeconds` ngắn để giám sát ổn định mà không gây ra khởi động lại nhầm.
 
 
 ## Networking and Load Balancing
@@ -270,6 +296,29 @@ ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va
     - **Guaranteed (Được đảm bảo)**: `requests == limits` cho tất cả container. (Ưu tiên cao nhất).
     - **Burstable (Có thể bùng nổ)**: `requests < limits` hoặc chỉ định nghĩa một trong hai. (Ưu tiên trung bình).
     - **BestEffort (Nỗ lực tối đa)**: Không định nghĩa requests hay limits. (Ưu tiên thấp nhất, bị giết đầu tiên).
+
+
+## Parameters Tuning
+- **en**:
+  - **What**: The process of adjusting configuration values (CPU/Memory, Kernel limits, Application flags) to optimize performance, cost, and reliability.
+  - **Who**: Performed by DevOps engineers or SREs based on monitoring data (metrics) and load testing.
+  - **Where**: Can be applied at the Pod level (`resources`, `env`), Application level (ConfigMaps), or Node/Kernel level (`sysctls`).
+  - **When**: During the move from development to production or when scaling up to handle higher traffic.
+  - **Why**: To prevent resource bottleneck issues like **Throttling** or **OOMKilled**, and to ensure the most efficient use of infrastructure.
+  - **How**:
+    - **Resource Tuning**: Refining `requests` and `limits`.
+    - **Kernel Tuning**: Using `securityContext.sysctls` for network/file system tweaks.
+    - **App Tuning**: Adjusting thread pools or memory heaps (e.g., `-Xmx` for Java).
+- **vi**:
+  - **What (Cái gì)**: Quá trình điều chỉnh các giá trị cấu hình (CPU/RAM, giới hạn Kernel, tham số ứng dụng) để tối ưu hóa hiệu năng, chi phí và độ tin cậy.
+  - **Who (Ai)**: Thực hiện bởi kỹ sư DevOps hoặc SRE dựa trên dữ liệu giám sát (metrics) và kiểm thử chịu tải (load test).
+  - **Where (Ở đâu)**: Có thể áp dụng ở cấp độ Pod (`resources`, `env`), cấp độ Ứng dụng (ConfigMaps), hoặc cấp độ Node/Kernel (`sysctls`).
+  - **When (Khi nào)**: Thường diễn ra khi chuyển từ môi trường phát triển sang production hoặc khi cần mở rộng hệ thống để chịu tải cao hơn.
+  - **Why (Tại sao)**: Để ngăn chặn các điểm nghẽn tài nguyên như **Throttling** hoặc **OOMKilled**, và đảm bảo sử dụng hạ tầng hiệu quả nhất.
+  - **How (Như thế nào)**:
+    - **Tinh chỉnh tài nguyên**: Điều chỉnh chính xác `requests` và `limits`.
+    - **Tinh chỉnh Kernel**: Sử dụng `securityContext.sysctls` cho các tùy chỉnh về mạng/hệ thống tệp.
+    - **Tinh chỉnh App**: Điều chỉnh thread pools hoặc bộ nhớ heap (ví dụ: `-Xmx` cho Java).
 
 
 ## Resource Quotas
@@ -630,3 +679,24 @@ REVISION  CHANGE-CAUSE
 PS D:\devops\dev-devops-exp> kubectl rollout undo deployment/my-deployment
 deployment.apps/my-deployment rolled back
 ```
+
+### Useful CLI Flags & PowerShell Tips
+
+- **The Watch Flag (`-w` / `--watch`)**:
+  - **en**: Keeps the command open and streams changes in real-time. Useful for monitoring state transitions (e.g., `ContainerCreating` -> `Running`).
+  - **vi**: Giữ lệnh luôn mở và cập nhật thay đổi theo thời gian thực. Hữu ích để theo dõi quá trình chuyển trạng thái của Pod.
+  - **Example**: `kubectl get pods -w`
+
+- **PowerShell Filtering (`Select-String`)**:
+  - **en**: Use `Select-String` instead of `grep` on Windows PowerShell to filter output.
+  - **vi**: Sử dụng `Select-String` thay cho `grep` trên Windows PowerShell để lọc dữ liệu đầu ra.
+  - **Example**: `kubectl get events | Select-String "my-pod"`
+
+- **Interactive Exec (`kubectl exec -it`)**:
+  - **en**: Access a container's shell environment.
+    - `-i` (stdin): Keep stdin open even if not attached.
+    - `-t` (tty): Allocate a pseudo-TTY (interactive terminal).
+  - **vi**: Truy cập vào môi trường shell của container.
+    - `-i`: Giữ đầu vào (stdin) luôn mở.
+    - `-t`: Cấp phát một terminal ảo để tương tác.
+  - **Example**: `kubectl exec -it <pod-name> -- /bin/sh`
