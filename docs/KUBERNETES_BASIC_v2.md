@@ -154,6 +154,63 @@ ref: "https://devops.vn/posts/bai-1-gioi-thieu-kubernetes-va-khai-niem-cluster-c
 ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va-secret-trong-yaml/)
 
 
+## Probes
+- **en**:
+  - **What**: Probes are health checks performed by the `kubelet` to monitor the status of containers.
+  - **Who**: Defined by developers/DevOps engineers in the Pod specification.
+  - **Where**: Executed locally on the Node by the `kubelet`.
+  - **When**: Throughout the container's lifecycle to ensure reliability and availability.
+  - **Why**: To enable self-healing (restarting crashed apps) and ensure traffic only flows to ready instances.
+  - **How**: Using three main types: **Liveness**, **Readiness**, and **Startup**.
+- **vi**:
+  - **What (Cái gì)**: Probes là các bước kiểm tra sức khỏe được thực hiện bởi `kubelet` để giám sát trạng thái của các container.
+  - **Who (Ai)**: Do lập trình viên hoặc kỹ sư DevOps định nghĩa trong cấu hình Pod.
+  - **Where (Ở đâu)**: Được thực hiện cục bộ trên Node bởi `kubelet`.
+  - **When (Khi nào)**: Diễn ra trong suốt vòng đời của container để đảm bảo tính tin cậy và sẵn sàng.
+  - **Why (Tại sao)**: Để cho phép tự phục hồi (khởi động lại app bị treo) và đảm bảo lưu lượng truy cập chỉ đến được các instance đã sẵn sàng.
+  - **How (Như thế nào)**: Gồm ba loại chính: **Liveness**, **Readiness**, và **Startup**.
+
+### Liveness Probe
+- **en**:
+  - **What**: A check to see if a container is still alive and running correctly.
+  - **Why**: To automatically restart containers that enter an unrecoverable state (e.g., deadlock, infinite loop).
+  - **When**: Throughout the entire lifecycle of the container after it successfully starts.
+  - **How**: If it fails, Kubernetes kills the container and starts a new one based on the `restartPolicy`.
+- **vi**:
+  - **What (Cái gì)**: Kiểm tra xem container còn "sống" và hoạt động bình thường không.
+  - **Why (Tại sao)**: Để tự động khởi động lại các container rơi vào trạng thái lỗi không thể phục hồi (ví dụ: bị treo deadlock).
+  - **When (Khi nào)**: Trong suốt vòng đời của container sau khi nó đã bắt đầu chạy.
+  - **How (Như thế nào)**: Nếu thất bại, Kubernetes sẽ xóa container đó và khởi tạo lại theo `restartPolicy`.
+
+### Readiness Probe
+- **en**:
+  - **What**: A check to see if a container is ready to accept and process incoming network traffic.
+  - **Why**: To ensure users don't hit an app that is still initializing, loading data, or temporarily overloaded.
+  - **When**: Before routing traffic and periodically while the Pod is active in a Service.
+  - **How**: If it fails, the Pod's IP is removed from all Service endpoints (traffic is stopped but the container keeps running).
+- **vi**:
+  - **What (Cái gì)**: Kiểm tra xem container đã sẵn sàng nhận và xử lý các yêu cầu mạng chưa.
+  - **Why (Tại sao)**: Đảm bảo người dùng không truy cập vào app đang khởi tạo, đang tải dữ liệu hoặc đang bị quá tải.
+  - **When (Khi nào)**: Trước khi điều phối traffic và định kỳ khi Pod đang nằm trong một Service.
+  - **How (Như thế nào)**: Nếu thất bại, IP của Pod sẽ bị gỡ khỏi danh sách Service endpoints (ngừng nhận traffic nhưng container vẫn chạy).
+
+### Startup Probe
+- **en**:
+  - **What**: A check designed specifically for the initial startup phase of slow-starting applications.
+  - **Why**: To prevent Liveness probes from killing an app before it has finished its heavy initialization (e.g., loading a large JVM).
+  - **When**: Only during the initial container startup.
+  - **How**: It disables Liveness and Readiness probes until it succeeds. Once it succeeds, the other probes take over.
+- **vi**:
+  - **What (Cái gì)**: Kiểm tra dành riêng cho giai đoạn khởi động ban đầu của các ứng dụng cần nhiều thời gian.
+  - **Why (Tại sao)**: Ngăn Liveness probe khởi động lại app khi nó chưa kịp hoàn tất các bước khởi tạo nặng (như load JVM).
+  - **When (Khi nào)**: Chỉ diễn ra trong quá trình khởi động ban đầu.
+  - **How (Như thế nào)**: Nó sẽ tạm dừng các Liveness và Readiness probe cho đến khi nó thành công. Sau khi thành công, các probe kia mới bắt đầu làm việc.
+
+> **Check Mechanisms**:
+> - **en**: Can use `httpGet` (standard HTTP request), `tcpSocket` (port check), or `exec` (running a command inside).
+> - **vi**: Có thể sử dụng `httpGet` (gửi request HTTP), `tcpSocket` (kiểm tra cổng TCP), hoặc `exec` (chạy một câu lệnh bên trong).
+
+
 ## Networking and Load Balancing
 - **en**:
   - **What**: An abstraction layer that enables communication between Pods, Services, and external traffic. Main objects include **Services** (ClusterIP, NodePort, LoadBalancer) for internal/external access and **Ingress** for HTTP/HTTPS routing.
@@ -167,6 +224,52 @@ ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va
   - **When (Khi nào)**: Sử dụng **Service** khi bạn cần một điểm truy cập ổn định (IP/DNS) cho các Pod có tính chất tạm thời. Sử dụng **Ingress** khi bạn cần lộ diện nhiều service dưới một IP duy nhất và quản lý SSL/TLS.
   - **Why (Tại sao)**: IP của Pod là động và sẽ thay đổi nếu chúng khởi động lại. Các đối tượng Networking cung cấp một định danh bền vững và tự động Cân bằng tải (Load Balancing) giữa các bản sao của Pod.
   - **How (Như thế nào)**: Service sử dụng **Selector** để theo dõi các Pod; `kube-proxy` quản lý logic điều hướng. Ingress controller (như Nginx) đóng vai trò là reverse proxy để điều hướng lưu lượng dựa trên hostname hoặc đường dẫn.
+
+
+## Resource Requests and Limits
+- **en**:
+  - **What**: Mechanisms to manage CPU and Memory for containers. **Requests** is the minimum guaranteed amount; **Limits** is the maximum allowed amount.
+  - **Who**: Specified by developers in the Pod manifest.
+  - **Where**: Defined per-container under `resources` field.
+  - **When**: Should be used in all production environments to ensure cluster stability.
+  - **Why**: To help the scheduler place Pods correctly (via Requests) and prevent "Noisy Neighbor" issues (via Limits).
+  - **How**:
+    - **Memory**: Exceeding limits leads to **OOMKilled**.
+    - **CPU**: Exceeding limits leads to **Throttling** (slowing down).
+- **vi**:
+  - **What (Cái gì)**: Các cơ chế quản lý CPU và Bộ nhớ cho container. **Requests** là mức tối thiểu được đảm bảo; **Limits** là mức tối đa được phép dùng.
+  - **Who (Ai)**: Do lập trình viên chỉ định trong tệp YAML của Pod.
+  - **Where (Ở đâu)**: Được định nghĩa cho từng container trong trường `resources`.
+  - **When (Khi nào)**: Nên được sử dụng trong mọi môi trường production để đảm bảo sự ổn định của cụm cluster.
+  - **Why (Tại sao)**: Giúp bộ lập lịch đặt Pod vào Node phù hợp (qua Requests) và ngăn chặn vấn đề "Noisy Neighbor" (qua Limits).
+  - **How (Như thế nào)**:
+    - **Memory**: Vượt quá giới hạn sẽ bị **OOMKilled** (bị giết).
+    - **CPU**: Vượt quá giới hạn sẽ bị **Throttling** (bị bóp tốc độ).
+
+> **Important Difference**:
+> - **en**: **Requests** are used during scheduling (deciding where the Pod goes). **Limits** are enforced during runtime (preventing resource hogging).
+> - **vi**: **Requests** được dùng khi lập lịch (quyết định Pod chạy ở đâu). **Limits** được thực thi khi chạy (ngăn chặn việc chiếm dụng tài nguyên).
+
+
+## Quality of Service (QoS) Classes
+- **en**:
+  - **What**: A classification system Kubernetes uses to prioritize Pods for eviction when a Node is under resource pressure.
+  - **Who**: Automatically assigned by Kubernetes based on the `requests` and `limits` defined.
+  - **Where**: Visible in `kubectl describe pod` under the "QoS Class" field.
+  - **Why**: To ensure that critical applications (Guaranteed) keep running while less important ones (BestEffort) are sacrificed to maintain Node stability.
+  - **How**: Pods are categorized into three levels:
+    - **Guaranteed**: `requests == limits` for all containers. (Highest priority).
+    - **Burstable**: `requests < limits` or only requests/limits defined. (Medium priority).
+    - **BestEffort**: No requests or limits defined. (Lowest priority, killed first).
+- **vi**:
+  - **What (Cái gì)**: Một hệ thống phân loại mà Kubernetes dùng để ưu tiên các Pod khi cần giải phóng tài nguyên (eviction) trên Node.
+  - **Who (Ai)**: Được Kubernetes tự động gán dựa trên cấu hình `requests` và `limits`.
+  - **Where (Ở đâu)**: Có thể xem trong lệnh `kubectl describe pod` tại trường "QoS Class".
+  - **Why (Tại sao)**: Đảm bảo các ứng dụng quan trọng (Guaranteed) vẫn chạy, trong khi các ứng dụng ít quan trọng hơn (BestEffort) bị hy sinh để bảo vệ Node.
+  - **How (Như thế nào)**: Pod được chia làm ba cấp độ:
+    - **Guaranteed (Được đảm bảo)**: `requests == limits` cho tất cả container. (Ưu tiên cao nhất).
+    - **Burstable (Có thể bùng nổ)**: `requests < limits` hoặc chỉ định nghĩa một trong hai. (Ưu tiên trung bình).
+    - **BestEffort (Nỗ lực tối đa)**: Không định nghĩa requests hay limits. (Ưu tiên thấp nhất, bị giết đầu tiên).
 
 
 ## Resource Quotas
@@ -241,6 +344,38 @@ ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va
   - **Where (Ở đâu)**: Được triển khai trong cùng một Pod với ứng dụng, đại diện cho giao diện mạng cho lưu lượng truy cập ra ngoài hoặc vào trong.
   - **Why (Tại sao)**: Để đơn giản hóa cách ứng dụng kết nối với các dịch vụ bên ngoài (ví dụ: phân mảnh cơ sở dữ liệu - sharding, ngắt mạch - circuit breaking, phát hiện dịch vụ - service discovery).
   - **How (Như thế nào)**: Ứng dụng kết nối tới `localhost` trên một cổng cụ thể, và container ambassador sẽ điều phối lưu lượng đó đến đích bên ngoài phù hợp.
+
+
+# Troubleshooting & Common Errors
+
+## OOMKilled
+- **en**:
+  - **What**: Stands for "Out Of Memory Killed" (Exit Code 137). It means the container was terminated because it exceeded its memory limit or the node ran out of RAM.
+  - **Who**: Triggered by the Linux Kernel's OOM Killer or the Kubernetes container runtime.
+  - **Where**: Monitored at the Node level and reported in the Pod status.
+  - **When**: Occurs when an application has a memory leak, is under heavy load, or is assigned insufficient resources.
+  - **Why**: To prevent a single container from crashing the entire host node by consuming all available memory.
+  - **How to Fix**: Increase `resources.limits.memory` in the YAML, optimize application memory usage, or add more nodes to the cluster.
+- **vi**:
+  - **What (Cái gì)**: Viết tắt của "Out Of Memory Killed" (Mã thoát 137). Nghĩa là container bị buộc dừng vì sử dụng vượt quá giới hạn RAM cho phép hoặc Node bị hết RAM.
+  - **Who (Ai)**: Được kích hoạt bởi OOM Killer của nhân Linux hoặc bộ điều phối container của Kubernetes.
+  - **Where (Ở đâu)**: Được giám sát ở cấp độ Node và báo cáo trong trạng thái của Pod.
+  - **When (Khi nào)**: Xảy ra khi ứng dụng bị rò rỉ bộ nhớ (memory leak), đang chịu tải quá cao, hoặc được cấp phát quá ít tài nguyên.
+  - **Why (Tại sao)**: Để ngăn chặn một container đơn lẻ làm sập toàn bộ máy host bằng cách chiếm dụng hết bộ nhớ còn lại.
+  - **How to Fix (Cách khắc phục)**: Tăng `resources.limits.memory` trong tệp YAML, tối ưu hóa việc sử dụng RAM của ứng dụng, hoặc thêm Node mới vào cluster.
+
+
+## CrashLoopBackOff
+- **en**:
+  - **What**: A status indicating a container is failing repeatedly and Kubernetes is waiting for an increasing amount of time before restarting it.
+  - **The "BackOff"**: An exponential delay (10s, 20s, 40s... up to 5 mins) to prevent overloading the system with restart attempts.
+  - **Why**: Typically caused by application bugs, missing configurations (ConfigMaps/Secrets), OOMKilled events, or port conflicts.
+  - **How to Fix**: Check logs using `kubectl logs <pod-name>` or events using `kubectl describe pod <pod-name>` to identify the root cause inside the application.
+- **vi**:
+  - **What (Cái gì)**: Trạng thái báo hiệu container bị lỗi liên tục và Kubernetes đang trì hoãn việc khởi động lại nó trong một khoảng thời gian tăng dần.
+  - **Phần "BackOff"**: Thời gian chờ tăng theo cấp số nhân (10s, 20s, 40s... tối đa 5 phút) để tránh làm quá tải hệ thống bởi các lần khởi động lại liên tục.
+  - **Why (Tại sao)**: Thường do lỗi code, thiếu tệp cấu hình (ConfigMaps/Secrets), do bị OOMKilled, hoặc xung đột cổng kết nối (port).
+  - **How to Fix (Cách khắc phục)**: Kiểm tra log bằng lệnh `kubectl logs <pod-name>` hoặc xem sự kiện bằng lệnh `kubectl describe pod <pod-name>` để xác định lỗi cụ thể bên trong ứng dụng.
 
 
 # CLIs
