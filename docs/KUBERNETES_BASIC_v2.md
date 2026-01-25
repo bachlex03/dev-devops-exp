@@ -92,6 +92,26 @@ ref: "https://devops.vn/posts/bai-1-gioi-thieu-kubernetes-va-khai-niem-cluster-c
 
 # Other Concepts
 
+## Container Command and Args
+- **en**:
+  - **What**: `command` and `args` in Kubernetes define the executable and its parameters for a container. They correspond to Docker's `ENTRYPOINT` and `CMD`.
+  - **Who**: Defined by the developer or DevOps engineer in the Pod specification.
+  - **Where**: Specified within the `spec.containers` field of a Pod, Deployment, or other workload objects.
+  - **When**: Use them to override the image's default startup behavior or to pass specific flags/scripts to the container at runtime.
+  - **Why**: To gain precise control over what process runs inside the container and how it is configured without modifying the container image itself.
+  - **How**: `command` overrides the Docker `ENTRYPOINT`, and `args` overrides the Docker `CMD`. If `command` is provided, it becomes the entry point; if `args` is also provided, they are passed as arguments to that command.
+- **vi**:
+  - **What (Cái gì)**: `command` và `args` trong Kubernetes xác định file thực thi và các tham số của nó cho một container. Chúng tương ứng với `ENTRYPOINT` và `CMD` trong Docker.
+  - **Who (Ai)**: Được định nghĩa bởi lập trình viên hoặc kỹ sư DevOps trong cấu hình Pod.
+  - **Where (Ở đâu)**: Được khai báo trong trường `spec.containers` của Pod, Deployment hoặc các đối tượng workload khác.
+  - **When (Khi nào)**: Sử dụng để ghi đè hành vi khởi động mặc định của image hoặc để truyền các tham số/script cụ thể vào container khi chạy.
+  - **Why (Tại sao)**: Để kiểm soát chính xác tiến trình nào chạy bên trong container và cách nó được cấu hình mà không cần sửa đổi chính container image đó.
+  - **How (Như thế nào)**: `command` ghi đè `ENTRYPOINT` của Docker, và `args` ghi đè `CMD` của Docker. Nếu `command` được khai báo, nó trở thành điểm khởi đầu; nếu `args` cũng được khai báo, chúng sẽ được truyền vào làm tham số cho lệnh đó.
+
+> **Execution Rules**:
+> - **en**: If you define `command` but no `args`, only the command is run. If you define `args` but no `command`, the image's default `ENTRYPOINT` is run with your `args`.
+> - **vi**: Nếu bạn xác định `command` nhưng không có `args`, chỉ lệnh đó được chạy. Nếu bạn xác định `args` nhưng không có `command`, lệnh `ENTRYPOINT` mặc định của image sẽ chạy với các `args` của bạn.
+
 ## Deployment & ReplicaSet
 - **en**:
   - **What**: **ReplicaSet** ensures a stable set of replica Pods running at any given time (ensure the right number of pods are running). **Deployment** is a higher-level controller that manages ReplicaSets to provide declarative updates (rolling updates) and rollbacks and desired state (number of pods, replica sets).
