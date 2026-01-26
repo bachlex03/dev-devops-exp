@@ -595,7 +595,9 @@ ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va
 +  - **When (Khi nào)**: Thường gặp khi tạo Ingress ở namespace `default` nhưng Service lại nằm ở một namespace tùy chỉnh (như `exam`).
 +  - **Symptoms (Dấu hiệu)**: Lệnh `kubectl describe ingress` báo lỗi `<error: endpoints "..." not found>`.
 +  - **How to Fix (Cách khắc phục)**: Triển khai lại Ingress trong cùng Namespace với Service bằng cách thêm `metadata.namespace: <your-namespace>`.
-+
+ 
++ 
+
 +**Example Error Output**:
 +```bash
 +PS D:\devops\dev-devops-exp> kubectl describe ingress demo-ingress
@@ -1052,4 +1054,82 @@ status:
   - **Vấn đề**: Khi tải lại trang trên trình duyệt, bạn có thể thấy chỉ một Pod duy nhất phản hồi liên tục.
   - **Tại sao**: Các trình duyệt hiện đại dùng **HTTP Keep-Alive** để giữ kết nối TCP luôn mở nhằm tăng tốc độ. Kubernetes cân bằng tải theo mỗi *kết nối*, không phải theo mỗi *request*. Vì kết nối được dùng lại, traffic sẽ tiếp tục đi tới cùng một Pod.
   - **Cách kiểm tra LB**: Sử dụng vòng lặp `curl` (mỗi lần gọi là một kết nối mới) hoặc mở link trong cửa sổ **Ẩn danh**.
+
+## Storage (Volumes)
+
+### Ephemeral Storage: emptyDir
+- **en**:
+  - **What**: A temporary volume that is created when a Pod is assigned to a Node. It exists as long as the Pod is running.
+  - **Why**: Used for sharing data between containers in the same Pod or for scratch space.
+  - **Important**: Data is deleted when the Pod is deleted.
+- **vi**:
+  - **What (Cái gì)**: Ổ đĩa tạm thời gắn liền với vòng đời của Pod.
+  - **Why (Tại sao)**: Dùng để chia sẻ dữ liệu giữa các container trong cùng 1 Pod hoặc làm bộ nhớ tạm.
+  - **Lưu ý**: Dữ liệu mất hoàn toàn khi Pod bị xóa.
+
+#### Lab: Shared emptyDir (Reader/Writer)
+- **en**:
+  - **Setup**: Container A (Writer) mounts `temp-vol` at `/output`. Container B (Reader) mounts `temp-vol` at `/input`.
+  - **Result**: Writer writes to `/output/message.txt` $\rightarrow$ Reader can read from `/input/message.txt`.
+  - **Key Insight**: Different **MountPaths** can point to the same **Volume** (USB analogy).
+- **vi**:
+  - **Thực hành**: Container A (Writer) gắn volume tại `/output`. Container B (Reader) gắn volume tại `/input`.
+  - **Kết quả**: Writer ghi vào `/output/message.txt` $\rightarrow$ Reader có thể đọc từ `/input/message.txt`.
+  - **Điểm mấu chốt**: Các **MountPath** khác nhau có thể cùng trỏ về một **Volume** duy nhất (Phép ẩn dụ về thẻ nhớ dùng chung).
++
++#### FAQ: Why use different MountPath names?
++- **en**:
++  - **Clarity**: It describes the container's logic (e.g., one container writes to `/output`, another reads from `/input`).
++  - **Collision Prevention**: Mounting at a common path like `/data` might hide original files inside the container image. Using custom names is safer.
++  - **Technical Note**: They **can** be the same, but using different names is a Best Practice for organization.
++- **vi**:
++  - **Sự rõ ràng**: Nó mô tả logic của container (ví dụ: một bên ghi vào `/output`, một bên đọc từ `/input`).
++  - **Tránh xung đột**: Gắn (mount) vào các đường dẫn chung như `/data` có thể làm ẩn đi các file có sẵn của container image. Dùng tên riêng biệt sẽ an toàn hơn.
++  - **Lưu ý kỹ thuật**: Chúng **có thể** giống nhau, nhưng dùng tên khác nhau là một Best Practice để tổ chức code tốt hơn.
+
++### Node Storage: hostPath
++- **en**:
++  - **What**: Mounts a file or directory from the host node's filesystem directly into your Pod.
++  - **Why**: Used for system-level tools that need access to node internals (e.g., reading logs in `/var/log`).
++  - **Warning**: It creates a security risk and makes your Pod "Node-Dependent" (if the Pod moves to another node, it won't see the same data).
++  - **Types**: `DirectoryOrCreate`, `FileOrCreate`, `Directory`, `File`, `Socket`, etc.
++- **vi**:
++  - **What (Cái gì)**: Gắn (mount) một tệp tin hoặc thư mục trực tiếp từ hệ thống tệp của máy chủ (Node) vào Pod của bạn.
++  - **Why (Tại sao)**: Dùng cho các công cụ hệ thống cần truy cập sâu vào Node (ví dụ: đọc log hệ thống tại `/var/log`).
++  - **Cảnh báo**: Nó tạo ra rủi ro bảo mật và làm cho Pod bị "Lệ thuộc vào Node" (nếu Pod chuyển sang máy khác, nó sẽ không thấy dữ liệu cũ).
++  - **Các loại (Types)**: `DirectoryOrCreate`, `FileOrCreate`, `Directory`, `File`, `Socket`, v.v.
+
++#### Detailed hostPath Types
++| Type | Description (en) | Mô tả (vi) |
++| :--- | :--- | :--- |
++| **`Directory`** | Must exist. Pod fails if missing. | Thư mục phải tồn tại. Lỗi nếu không tìm thấy. |
++| **`DirectoryOrCreate`** | Create if missing (0755). | Tự tạo thư mục nếu chưa có (quyền 0755). |
++| **`File`** | Must exist. | File phải tồn tại sẵn. |
++| **`FileOrCreate`** | Create if missing (0644). | Tự tạo file trống nếu chưa có (quyền 0644). |
++| **`Socket`** | UNIX socket must exist. | UNIX socket phải tồn tại sẵn. |
++| **`CharDevice`** | Character device (hardware). | File thiết bị dạng ký tự (phần cứng). |
++| **`BlockDevice`** | Block device (disk). | File thiết bị dạng khối (ổ đĩa). |
++
++### Volume Lifecycle Comparison
++- **en**:
++  - **emptyDir**: 
++    - **Persistence**: Transient (Temporary).
++    - **Lifecycle**: Tied to the Pod. Created when the Pod is scheduled; deleted when the Pod is removed from the node.
++    - **Survival**: Data survives container crashes/restarts, but NOT Pod deletion.
++  - **hostPath**:
++    - **Persistence**: External to the Pod.
++    - **Lifecycle**: Independent of the Pod. The data exists on the Node before the Pod starts and remains after the Pod is deleted.
++    - **Identity**: The data is linked to the **Node**, not the Cluster. If the Pod is moved to a new node, it cannot access the data from the old node.
++- **vi**:
++  - **emptyDir**: 
++    - **Tính bền vững**: Tạm thời.
++    - **Vòng đời**: Theo sát Pod. Được tạo khi Pod được lập lịch; bị xóa khi Pod bị gỡ bỏ khỏi node.
++    - **Khả năng sống sót**: Dữ liệu tồn tại được qua việc container bị crash/restart, nhưng KHÔNG sống được nếu Pod bị xóa.
++  - **hostPath**:
++    - **Tính bền vững**: Nằm ngoài Pod.
++    - **Vòng đời**: Độc lập với Pod. Dữ liệu tồn tại trên Node trước khi Pod chạy và vẫn còn đó sau khi Pod bị xóa.
++    - **Định danh**: Dữ liệu gắn liền với **Node**, không phải Cluster. Nếu Pod được chuyển sang node mới, nó sẽ không truy cập được dữ liệu từ node cũ.
++
++
++
 
