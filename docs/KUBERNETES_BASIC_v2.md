@@ -304,6 +304,65 @@ ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va
   - **Why (Tại sao)**: IP của Pod là động và sẽ thay đổi nếu chúng khởi động lại. Các đối tượng Networking cung cấp một định danh bền vững và tự động Cân bằng tải (Load Balancing) giữa các bản sao của Pod.
   - **How (Như thế nào)**: Service sử dụng **Selector** để theo dõi các Pod; `kube-proxy` quản lý logic điều hướng. Ingress controller (như Nginx) đóng vai trò là reverse proxy để điều hướng lưu lượng dựa trên hostname hoặc đường dẫn.
 
++### Network Policy
++- **en**:
++  - **What**: An L3/L4 firewall for Pods that controls traffic flow based on labels.
++  - **Why**: By default, K8s allows all pod-to-pod communication. Network policies implement a "Default Deny" or selective allow security model.
++  - **Who**: Managed by DevOps/Security teams.
+  - **How**: It defines **Ingress** (incoming) and **Egress** (outgoing) rules using `podSelector`, `namespaceSelector`, or `ipBlock`.
+- **vi**:
+  - **What (Cái gì)**: Một tường lửa tầng L3/L4 cho Pod, kiểm soát luồng traffic dựa trên các nhãn (labels).
+  - **Why (Tại sao)**: Mặc định K8s cho phép mọi Pod gọi nhau. Network Policy giúp thực hiện mô hình bảo mật "Chặn mặc định" hoặc "Cho phép có chọn lọc".
+  - **Who (Ai)**: Được quản lý bởi đội ngũ DevOps/Bảo mật.
+  - **How (Như thế nào)**: Định nghĩa các quy tắc **Ingress** (vào) và **Egress** (ra) bằng cách dùng `podSelector`, `namespaceSelector`, hoặc `ipBlock`.
+
+#### Policy Types
+- **en**:
+  - **Ingress**: Controls incoming traffic to the Pod. You can limit who can call your app.
+  - **Egress**: Controls outgoing traffic from the Pod. You can limit which external APIs or databases your app can talk to.
+  - **Default Deny**: A security best practice where you block all traffic by default and then selectively allow only what is necessary (Whitelist approach).
+- **vi**:
+  - **Ingress**: Kiểm soát lưu lượng truy cập **vào** Pod. Bạn có thể giới hạn ai được phép gọi đến ứng dụng của mình.
+  - **Egress**: Kiểm soát lưu lượng truy cập **ra** từ Pod. Bạn có thể giới hạn ứng dụng chỉ được phép gọi ra các API hoặc Database cụ thể.
+  - **Default Deny (Chặn mặc định)**: Một nguyên tắc bảo mật tốt nhất, trong đó bạn chặn toàn bộ lưu lượng theo mặc định, sau đó chỉ mở cho những gì thực sự cần thiết (mô hình Whitelist).
+
+> **Key Concept**:
+> - **en**: If no policy matches a Pod, it is "Non-Isolated" (All traffic allowed). As soon as a policy selects a Pod, it becomes "Isolated" for that traffic type.
+> - **vi**: Nếu không có chính sách nào khớp với Pod, nó ở trạng thái "Không bị cô lập" (Cho phép mọi traffic). Ngay khi có một chính sách chọn trúng Pod đó, nó sẽ trở thành "Bị cô lập" cho loại traffic tương ứng.
+
+
+### Ingress
+- **en**:
+  - **What**: An API object that manages external access to the services in a cluster, typically HTTP/HTTPS.
+  - **Why**: Used for SSL termination, path-based routing (e.g., `/nginx` vs `/httpd`), and virtual hosting (multiple domains on one IP).
+  - **Who**: Implemented by an **Ingress Controller** (e.g., NGINX).
+  - **How**: It defines rules to route traffic from a single entry point to multiple backend Services.
+- **vi**:
+  - **What (Cái gì)**: Một đối tượng API quản lý việc truy cập từ bên ngoài vào các service trong cluster, thông thường là HTTP/HTTPS.
+  - **Why (Tại sao)**: Dùng để quản lý SSL, điều hướng dựa trên đường dẫn (ví dụ: `/nginx` so với `/httpd`), và chạy nhiều tên miền trên cùng một IP (virtual hosting).
+  - **Who (Ai)**: Được thực thi bởi một **Ingress Controller** (ví dụ: NGINX).
+  - **How (Như thế nào)**: Nó định nghĩa các quy tắc để điều hướng traffic từ một điểm truy cập duy nhất tới nhiều Service xử lý bên dưới.
+
++### Lab: Path-Based Routing with Rewrite
++- **en**:
++  - **Goal**: Route `/nginx` to a web service and `/httpd` to another, while using the same base URL.
++  - **Key Annotation**: `nginx.ingress.kubernetes.io/rewrite-target: /`
++  - **Why**: Most apps listen at the root (`/`). If you don't rewrite, the Ingress sends the full path (e.g., `/nginx`) to the app, which usually results in a 404.
++  - **Example**:
++    ```yaml
++    annotations:
++      nginx.ingress.kubernetes.io/rewrite-target: /
++    ```
++- **vi**:
++  - **Mục tiêu**: Điều hướng `/nginx` tới một web service và `/httpd` tới một service khác, dùng chung một URL gốc.
++  - **Cấu hình then chốt**: `nginx.ingress.kubernetes.io/rewrite-target: /`
++  - **Tại sao**: Hầu hết ứng dụng lắng nghe ở đường dẫn gốc (`/`). Nếu không có rule rewrite, Ingress sẽ gửi toàn bộ đường dẫn (ví dụ: `/nginx`) tới ứng dụng, dẫn đến lỗi 404 (Not Found).
++  - **Ví dụ**:
++    ```yaml
++    annotations:
++      nginx.ingress.kubernetes.io/rewrite-target: /
++    ```
+
 ## Resource Requests and Limits
 - **en**:
   - **What**: Mechanisms to manage CPU and Memory for containers. **Requests** is the minimum guaranteed amount; **Limits** is the maximum allowed amount.
@@ -477,6 +536,33 @@ ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va
   - **Phần "BackOff"**: Thời gian chờ tăng theo cấp số nhân (10s, 20s, 40s... tối đa 5 phút) để tránh làm quá tải hệ thống bởi các lần khởi động lại liên tục.
   - **Why (Tại sao)**: Thường do lỗi code, thiếu tệp cấu hình (ConfigMaps/Secrets), do bị OOMKilled, hoặc xung đột cổng kết nối (port).
   - **How to Fix (Cách khắc phục)**: Kiểm tra log bằng lệnh `kubectl logs <pod-name>` hoặc xem sự kiện bằng lệnh `kubectl describe pod <pod-name>` để xác định lỗi cụ thể bên trong ứng dụng.
+ 
++## Ingress Namespace Mismatch
++- **en**:
++  - **What**: A configuration error where the Ingress object cannot find its backend Services.
++  - **Why**: Ingress is a **Namespaced resource**. It can generally only route traffic to Services located in the same Namespace.
++  - **When**: Common when deploying an Ingress in `default` while Services are in a custom namespace (like `exam`).
++  - **Symptoms**: `kubectl describe ingress` shows `<error: endpoints "..." not found>`.
++  - **How to Fix**: Redeploy the Ingress in the same Namespace as your Services using `metadata.namespace: <your-namespace>`.
++- **vi**:
++  - **What (Cái gì)**: Lỗi cấu hình khi đối tượng Ingress không thể tìm thấy các Service xử lý bên dưới.
++  - **Why (Tại sao)**: Ingress là một **tài nguyên theo Namespace**. Thông thường, nó chỉ có thể điều hướng traffic tới các Service nằm trong cùng một Namespace với nó.
++  - **When (Khi nào)**: Thường gặp khi tạo Ingress ở namespace `default` nhưng Service lại nằm ở một namespace tùy chỉnh (như `exam`).
++  - **Symptoms (Dấu hiệu)**: Lệnh `kubectl describe ingress` báo lỗi `<error: endpoints "..." not found>`.
++  - **How to Fix (Cách khắc phục)**: Triển khai lại Ingress trong cùng Namespace với Service bằng cách thêm `metadata.namespace: <your-namespace>`.
++
++**Example Error Output**:
++```bash
++PS D:\devops\dev-devops-exp> kubectl describe ingress demo-ingress
++Name:             demo-ingress
++Namespace:        default
++Rules:
++  Host        Path  Backends
++  ----        ----  --------
++  *
++              /nginx   nginx-service:80 (<error: endpoints "nginx-service" not found>)
++              /httpd   httpd-service:80 (<error: endpoints "httpd-service" not found>)
++```
 
 
 # CLIs
