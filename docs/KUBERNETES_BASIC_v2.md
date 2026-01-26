@@ -303,12 +303,29 @@ ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va
   - **When (Khi nào)**: Sử dụng **Service** khi bạn cần một điểm truy cập ổn định (IP/DNS) cho các Pod có tính chất tạm thời. Sử dụng **Ingress** khi bạn cần lộ diện nhiều service dưới một IP duy nhất và quản lý SSL/TLS.
   - **Why (Tại sao)**: IP của Pod là động và sẽ thay đổi nếu chúng khởi động lại. Các đối tượng Networking cung cấp một định danh bền vững và tự động Cân bằng tải (Load Balancing) giữa các bản sao của Pod.
   - **How (Như thế nào)**: Service sử dụng **Selector** để theo dõi các Pod; `kube-proxy` quản lý logic điều hướng. Ingress controller (như Nginx) đóng vai trò là reverse proxy để điều hướng lưu lượng dựa trên hostname hoặc đường dẫn.
+ 
+### Load Balancing
+- **en**:
+  - **What**: Distributes network traffic across multiple healthy Pod replicas.
+  - **Why**: Ensures no single Pod is overwhelmed and provides high availability (HA).
+  - **Who**: Handled by `kube-proxy` (internal) and Cloud Load Balancers (external).
+  - **How**: 
+    - **Standard Service**: L4 (TCP/UDP) balancing using iptables/IPVS.
+    - **Ingress**: L7 (HTTP/HTTPS) balancing with advanced features like path-routing.
+- **vi**:
+  - **What (Cái gì)**: Phân phối lưu lượng mạng đến nhiều Pod bản sao đang khỏe mạnh.
+  - **Why (Tại sao)**: Đảm bảo không có Pod nào bị quá tải và cung cấp tính sẵn sàng cao (HA).
+  - **Who (Ai)**: Được xử lý bởi `kube-proxy` (nội bộ) và Cloud Load Balancers (bên ngoài).
+  - **How (Như thế nào)**: 
+    - **Service chuẩn**: Cân bằng tải ở tầng L4 (TCP/UDP) dùng iptables/IPVS.
+    - **Ingress**: Cân bằng tải ở tầng L7 (HTTP/HTTPS) với các tính năng nâng cao như điều hướng theo đường dẫn.
 
-+### Network Policy
-+- **en**:
-+  - **What**: An L3/L4 firewall for Pods that controls traffic flow based on labels.
-+  - **Why**: By default, K8s allows all pod-to-pod communication. Network policies implement a "Default Deny" or selective allow security model.
-+  - **Who**: Managed by DevOps/Security teams.
+
+### Network Policy
+- **en**:
+  - **What**: An L3/L4 firewall for Pods that controls traffic flow based on labels.
+  - **Why**: By default, K8s allows all pod-to-pod communication. Network policies implement a "Default Deny" or selective allow security model.
+  - **Who**: Managed by DevOps/Security teams.
   - **How**: It defines **Ingress** (incoming) and **Egress** (outgoing) rules using `podSelector`, `namespaceSelector`, or `ipBlock`.
 - **vi**:
   - **What (Cái gì)**: Một tường lửa tầng L3/L4 cho Pod, kiểm soát luồng traffic dựa trên các nhãn (labels).
@@ -329,6 +346,34 @@ ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va
 > **Key Concept**:
 > - **en**: If no policy matches a Pod, it is "Non-Isolated" (All traffic allowed). As soon as a policy selects a Pod, it becomes "Isolated" for that traffic type.
 > - **vi**: Nếu không có chính sách nào khớp với Pod, nó ở trạng thái "Không bị cô lập" (Cho phép mọi traffic). Ngay khi có một chính sách chọn trúng Pod đó, nó sẽ trở thành "Bị cô lập" cho loại traffic tương ứng.
+
+### DNS in Kubernetes
+- **en**:
+  - **What**: A built-in service (CoreDNS) that provides name resolution for Pods and Services.
+  - **Why**: Allows applications to find each other using stable names (e.g., `db-svc`) instead of ephemeral IP addresses.
+  - **Where**: Runs as a Service/Pod in the `kube-system` namespace.
+  - **How**: Follows the pattern `<svc-name>.<namespace>.svc.cluster.local`.
+- **vi**:
+  - **What (Cái gì)**: Một dịch vụ tích hợp sẵn (CoreDNS) cung cấp khả năng phân giải tên cho Pod và Service.
+  - **Why (Tại sao)**: Cho phép các ứng dụng tìm thấy nhau bằng tên ổn định (ví dụ: `db-svc`) thay vì địa chỉ IP hay thay đổi.
+  - **Where (Ở đâu)**: Chạy dưới dạng Service/Pod trong namespace `kube-system`.
+  - **Where (Ở đâu)**: Chạy dưới dạng Service/Pod trong namespace `kube-system`.
+  - **How (Như thế nào)**: Tuân theo cấu trúc `<tên-svc>.<namespace>.svc.cluster.local`.
+ 
++#### dnsPolicy Types
++- **en**:
++  - **ClusterFirst (Default)**: Queries are sent to the cluster DNS. Non-internal names are forwarded to the node's upstream DNS.
++  - **Default**: Inherits DNS settings directly from the Node's `/etc/resolv.conf`.
++  - **ClusterFirstWithHostNet**: Required for Pods with `hostNetwork: true` to access internal cluster DNS.
++  - **None**: Ignores k8s DNS; requires manual configuration via `dnsConfig`.
++- **vi**:
++  - **ClusterFirst (Mặc định)**: Truy vấn gửi tới DNS của cluster. Các tên miền bên ngoài được chuyển tiếp tới DNS của Node.
++  - **Default**: Kế thừa cấu hình DNS trực tiếp từ file `/etc/resolv.conf` của Node.
++  - **ClusterFirstWithHostNet**: Cần thiết cho các Pod dùng `hostNetwork: true` nếu muốn truy cập DNS nội bộ của cluster.
++  - **None**: Bỏ qua DNS của k8s; yêu cầu cấu hình thủ công thông qua `dnsConfig`.
++
+ 
+ ### Ingress
 
 
 ### Ingress
@@ -994,18 +1039,17 @@ status:
   - `minikube service nginx-nodeport --url`
   - `kubectl port-forward service/nginx-nodeport 8081:80`
 
-> **Note on Dynamic Ports**:
-> - **en**: Why does the port change every time? On Windows/Docker, the cluster is isolated. `minikube service --url` creates a dynamic tunnel. Each time it runs, it established a *new* session and allocates a *new random available port* on your host. If you Ctrl+C, the tunnel closes and that port becomes invalid.
-> - **vi**: Tại sao cổng thay đổi mỗi lần? Trên Windows/Docker, cluster bị cô lập. `minikube service --url` tạo một đường hầm (tunnel) động. Mỗi lần chạy, nó thiết lập một phiên *mới* và cấp một *cổng ngẫu nhiên mới* còn trống trên máy bạn. Nếu bạn nhấn Ctrl+C, đường hầm sẽ đóng và cổng đó không còn tác dụng.
+> **Note on Dynamic Ports (Windows/Docker Tunneling)**:
+> - **en**: On Windows with the Docker driver, the Minikube node IP (e.g., `192.168.49.2`) is isolated. When you run `minikube service <name> --url`, it creates a tunnel to your localhost (`127.0.0.1`) on a random available port. This port acts as a bridge to the actual `nodePort` inside the cluster.
+> - **vi**: Trên Windows dùng Docker driver, IP của Node Minikube (ví dụ: `192.168.49.2`) bị cô lập. Khi chạy `minikube service <name> --url`, nó tạo một tunnel tới localhost (`127.0.0.1`) tại một cổng ngẫu nhiên. Cổng này đóng vai trò là "cầu nối" tới cổng `nodePort` thực tế bên trong cluster.
 
-**Successful Connection Test**:
-```powershell
-PS D:\devops\dev-devops-exp> curl http://127.0.0.1:60364
-StatusCode        : 200
-StatusDescription : OK
-Content           : <!DOCTYPE html>
-                    <html>
-                    <head>
-                    <title>Welcome to nginx!</title>
-...
-```
+### Load Balancing & Browser Persistence
+- **en**:
+  - **Issue**: When refreshing in a browser, you might always see the same Pod responding.
+  - **Why**: Modern browsers use **HTTP Keep-Alive** to keep a TCP connection open for faster performance. Kubernetes load balances per *connection*, not per *request*. Since the connection is reused, the traffic stays on the same Pod.
+  - **How to verify LB**: Use `curl` in a loop (which opens new connections) or open the link in an **Incognito** window.
+- **vi**:
+  - **Vấn đề**: Khi tải lại trang trên trình duyệt, bạn có thể thấy chỉ một Pod duy nhất phản hồi liên tục.
+  - **Tại sao**: Các trình duyệt hiện đại dùng **HTTP Keep-Alive** để giữ kết nối TCP luôn mở nhằm tăng tốc độ. Kubernetes cân bằng tải theo mỗi *kết nối*, không phải theo mỗi *request*. Vì kết nối được dùng lại, traffic sẽ tiếp tục đi tới cùng một Pod.
+  - **Cách kiểm tra LB**: Sử dụng vòng lặp `curl` (mỗi lần gọi là một kết nối mới) hoặc mở link trong cửa sổ **Ẩn danh**.
+
