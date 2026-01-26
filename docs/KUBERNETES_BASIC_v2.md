@@ -237,6 +237,59 @@ ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va
 > - **vi**: Sử dụng `failureThreshold` cao kết hợp với `periodSeconds` ngắn để giám sát ổn định mà không gây ra khởi động lại nhầm.
 
 
+## Service
+- **en**:
+  - **What**: An abstract way to expose an application running on a set of Pods as a network service.
+  - **Where**: Lives within a Namespace and provides a stable DNS name/IP for Pods.
+  - **When**: Use it whenever one part of your application (e.g., frontend) needs to talk to another part (e.g., backend) or when you need to expose your app to external users.
+  - **Why**: Pods are ephemeral; their IPs change when they restart. Services provide a **persistent endpoint** that doesn't change.
+  - **How**: It uses **Selectors** to track Pods with specific labels and automatically balances traffic among them.
+- **vi**:
+  - **What (Cái gì)**: Một cách trừu tượng để lộ diện một ứng dụng đang chạy trên một nhóm các Pod dưới dạng một dịch vụ mạng.
+  - **Where (Ở đâu)**: Tồn tại bên trong một Namespace và cung cấp một tên DNS/IP ổn định cho các Pod.
+  - **When (Khi nào)**: Sử dụng bất cứ khi nào một phần của ứng dụng (frontend) cần giao tiếp với phần khác (backend) hoặc khi bạn cần lộ diện ứng dụng cho người dùng bên ngoài.
+  - **Why (Tại sao)**: Các Pod có tính chất tạm thời; IP của chúng thay đổi khi khởi động lại. Service cung cấp một **điểm cuối bền vững** không đổi.
+  - **How (Như thế nào)**: Nó sử dụng **Selector** để theo dõi các Pod có nhãn (label) cụ thể và tự động cân bằng tải giữa các Pod đó.
+
+### Service Types
+- **en**:
+  - **ClusterIP (Default)**: Exposes the Service on a cluster-internal IP. Reachable only from within the cluster.
+  - **NodePort**: Exposes the Service on each Node's IP at a static port (30000-32767). Reachable from outside via `<NodeIP>:<NodePort>`.
+  - **LoadBalancer**: Exposes the Service externally using a cloud provider's load balancer. Automatically creates NodePort and ClusterIP.
+  - **ExternalName**: Maps the Service to a DNS name (CNAME record). Used for connecting to external services like DBs outside K8s.
+- **vi**:
+  - **ClusterIP (Mặc định)**: Cung cấp IP nội bộ trong cụm. Chỉ có thể truy cập từ bên trong cluster.
+  - **NodePort**: Mở một cổng tĩnh trên IP của mỗi Node (30000-32767). Có thể truy cập từ bên ngoài qua `<NodeIP>:<NodePort>`.
+  - **LoadBalancer**: Sử dụng bộ cân bằng tải của nhà cung cấp Cloud (AWS, GCP, Azure). Tự động tạo NodePort và ClusterIP.
+  - **ExternalName**: Ánh xạ Service tới một tên miền DNS (bản ghi CNAME). Dùng để kết nối với các dịch vụ bên ngoài cụm.
+
+#### Service with No Selector (Manual Endpoints)
+- **en**:
+  - **What**: A Service defined without a `selector`. You must manually create an `Endpoints` object with the same name.
+  - **Why**: Used to point to services **outside** the cluster (e.g., an external DB, a legacy server).
+- **vi**:
+  - **What (Cái gì)**: Một Service được định nghĩa không có `selector`. Bạn phải tự tạo thủ công một đối tượng `Endpoints` có cùng tên.
+  - **Why (Tại sao)**: Dùng để trỏ tới các dịch vụ nằm **ngoài** cluster (ví dụ: DB bên ngoài, server cũ).
+  - **Note on "IP"**:
+    - **en**: The `ip` field in `Endpoints` specifies the **Target Destination**. It maps the internal Service Name to a fixed external address.
+    - **vi**: Trường `ip` trong `Endpoints` chỉ định **Địa chỉ Đích**. Nó giúp ánh xạ Tên Service nội bộ tới một địa chỉ bên ngoài cố định.
+
+#### ClusterIP vs NodePort Comparison
+| Feature | ClusterIP | NodePort |
+| :--- | :--- | :--- |
+| **Reachability** | **Internal Only** (Inside cluster) | **External** (via Node IP) |
+| **IP/Port** | Internal Virtual IP / Any Port | Node IP / Port 30000-32767 |
+| **Relationship** | Basic service | Includes a ClusterIP automatically |
+| **Use case** | Microservice communication | Dev/Testing or Simple Exposure |
+
+| Đặc điểm | ClusterIP | NodePort |
+| :--- | :--- | :--- |
+| **Truy cập** | **Chỉ nội bộ** (Trong cụm) | **Bên ngoài** (Qua IP của Node) |
+| **IP/Cổng** | IP ảo nội bộ / Cổng bất kỳ | IP của Node / Cổng 30000-32767 |
+| **Mối quan hệ** | Service cơ bản | Tự động bao gồm cả ClusterIP |
+| **Ứng dụng** | Giao tiếp giữa các Service | Test hoặc lộ diện app đơn giản |
+
+
 ## Networking and Load Balancing
 - **en**:
   - **What**: An abstraction layer that enables communication between Pods, Services, and external traffic. Main objects include **Services** (ClusterIP, NodePort, LoadBalancer) for internal/external access and **Ingress** for HTTP/HTTPS routing.
@@ -250,7 +303,6 @@ ref: [ConfigMaps and Secrets](https://devops.vn/posts/bai-4-su-dung-configmap-va
   - **When (Khi nào)**: Sử dụng **Service** khi bạn cần một điểm truy cập ổn định (IP/DNS) cho các Pod có tính chất tạm thời. Sử dụng **Ingress** khi bạn cần lộ diện nhiều service dưới một IP duy nhất và quản lý SSL/TLS.
   - **Why (Tại sao)**: IP của Pod là động và sẽ thay đổi nếu chúng khởi động lại. Các đối tượng Networking cung cấp một định danh bền vững và tự động Cân bằng tải (Load Balancing) giữa các bản sao của Pod.
   - **How (Như thế nào)**: Service sử dụng **Selector** để theo dõi các Pod; `kube-proxy` quản lý logic điều hướng. Ingress controller (như Nginx) đóng vai trò là reverse proxy để điều hướng lưu lượng dựa trên hostname hoặc đường dẫn.
-
 
 ## Resource Requests and Limits
 - **en**:
@@ -700,3 +752,174 @@ deployment.apps/my-deployment rolled back
     - `-i`: Giữ đầu vào (stdin) luôn mở.
     - `-t`: Cấp phát một terminal ảo để tương tác.
   - **Example**: `kubectl exec -it <pod-name> -- /bin/sh`
+
+- **Testing Internal Connectivity (`kubectl run`)**:
+  - **en**: Run a temporary Pod to test network access to other Services using internal DNS names.
+    - `--rm`: Automatically deletes the Pod after it exits.
+    - `-it`: Runs in interactive mode.
+    - `--restart=Never`: Ensures it's a single Pod, not a controller (like Deployment).
+    - `--`: Separates kubectl flags from the container's command.
+    - `sh -c "..."`: Runs a shell command inside the container.
+  - **vi**: Chạy một Pod tạm thời để kiểm tra kết nối mạng tới các Service khác bằng tên DNS nội bộ.
+    - `--rm`: Tự động xóa Pod sau khi thoát.
+    - `-it`: Chạy ở chế độ tương tác.
+    - `--restart=Never`: Đảm bảo nó là Pod đơn lẻ, không phải controller.
+    - `--`: Ngăn cách các cờ của kubectl với câu lệnh bên trong container.
+    - `sh -c "..."`: Chạy một câu lệnh shell bên trong container.
+  - **Example & Response**:
+    ```powershell
+    PS D:\devops\dev-devops-exp> kubectl run test-pod --image=busybox --rm -it --restart=Never -- sh -c "wget -qO- http://nginx-service-yaml:8080"
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Welcome to nginx!</title>
+    ...
+    <h1>Welcome to nginx!</h1>
+    ...
+    </html>
+    pod "test-pod" deleted
+    ```
+
+- **Resource Inspection (Describe vs YAML)**:
+  - **en**:
+    - **Describe**: Use `kubectl describe <type> <name>` to see human-readable details, status, and **Events** (best for troubleshooting).
+    - **Export YAML**: Use `kubectl get <type> <name> -o yaml` to see the full, raw configuration (best for auditing or cloning).
+  - **vi**:
+    - **Describe (Mô tả)**: Sử dụng `kubectl describe <type> <name>` để xem chi tiết, trạng thái và các **Sự kiện (Events)** của tài nguyên (tốt nhất để tìm lỗi).
+    - **Xuất YAML**: Sử dụng `kubectl get <type> <name> -o yaml` để xem toàn bộ cấu hình thô của tài nguyên (tốt nhất để kiểm tra cấu hình hoặc sao chép).
+  - **Example**:
+    - `kubectl describe deployment nginx-app`
+    - `kubectl get deployment nginx-app -o yaml`
+    - `kubectl describe svc nginx-service-yaml`
+    - `kubectl get svc nginx-service-yaml -o yaml`
+  - Example response:
+    ```yaml
+    PS D:\devops\dev-devops-exp> kubectl get deployment nginx-app -o yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"nginx-app","namespace":"default"},"spec":{"replicas":3,"selector":{"matchLabels":{"app":"nginx"}},"template":{"metadata":{"labels":{"app":"nginx"}},"spec":{"containers":[{"image":"nginx:alpine","name":"nginx","ports":[{"containerPort":80}]}]}}}}
+  creationTimestamp: "2026-01-26T05:14:15Z"
+  generation: 1
+  name: nginx-app
+  namespace: default
+  resourceVersion: "526485"
+  uid: 98a1949c-7e4b-4c87-98a7-ed9c98a04943
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: nginx
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - image: nginx:alpine
+        imagePullPolicy: IfNotPresent
+        name: nginx
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  availableReplicas: 3
+  conditions:
+  - lastTransitionTime: "2026-01-26T05:14:38Z"
+    lastUpdateTime: "2026-01-26T05:14:38Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2026-01-26T05:14:15Z"
+    lastUpdateTime: "2026-01-26T05:14:38Z"
+    message: ReplicaSet "nginx-app-54fc99c8d" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  readyReplicas: 3
+  replicas: 3
+  updatedReplicas: 3
+    ```
+
+  - Example Service response:
+    ```yaml
+    PS D:\devops\dev-devops-exp> kubectl get svc nginx-service-yaml -o yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"name":"nginx-service-yaml","namespace":"default"},"spec":{"ports":[{"port":8080,"protocol":"TCP","targetPort":80}],"selector":{"app":"nginx"},"type":"ClusterIP"}}
+  creationTimestamp: "2026-01-26T05:38:44Z"
+  name: nginx-service-yaml
+  namespace: default
+  resourceVersion: "527660"
+  uid: ac735cff-83e3-4b8b-be77-71a2d73610ef
+spec:
+  clusterIP: 10.101.153.115
+  clusterIPs:
+  - 10.101.153.115
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+    ```
+
+### Local Access (Windows Docker Driver)
+- **en**:
+  - **Issue**: When using the Docker driver on Windows, `localhost:<NodePort>` doesn't work directly because the Cluster runs inside a container.
+  - **Option 1 (Minikube Tunnel)**: Use `minikube service <name> --url`. It creates a bridge and provides a temporary `127.0.0.1:xxxxx` URL.
+  - **Option 2 (Port-Forwarding)**: Use `kubectl port-forward service/<name> <local_port>:<svc_port>`. This is stable and works on any cluster.
+- **vi**:
+  - **Vấn đề**: Khi dùng Docker driver trên Windows, `localhost:<NodePort>` không hoạt động trực tiếp do Cluster chạy trong một container.
+  - **Cách 1 (Minikube Tunnel)**: Dùng `minikube service <name> --url`. Nó tạo một cầu nối và cung cấp một đường dẫn `127.0.0.1:xxxxx` tạm thời.
+  - **Cách 2 (Port-Forwarding)**: Dùng `kubectl port-forward service/<name> <local_port>:<svc_port>`. Cách này ổn định và hoạt động trên mọi cluster.
+- **Examples**:
+  - `minikube service nginx-nodeport --url`
+  - `kubectl port-forward service/nginx-nodeport 8081:80`
+
+> **Note on Dynamic Ports**:
+> - **en**: Why does the port change every time? On Windows/Docker, the cluster is isolated. `minikube service --url` creates a dynamic tunnel. Each time it runs, it established a *new* session and allocates a *new random available port* on your host. If you Ctrl+C, the tunnel closes and that port becomes invalid.
+> - **vi**: Tại sao cổng thay đổi mỗi lần? Trên Windows/Docker, cluster bị cô lập. `minikube service --url` tạo một đường hầm (tunnel) động. Mỗi lần chạy, nó thiết lập một phiên *mới* và cấp một *cổng ngẫu nhiên mới* còn trống trên máy bạn. Nếu bạn nhấn Ctrl+C, đường hầm sẽ đóng và cổng đó không còn tác dụng.
+
+**Successful Connection Test**:
+```powershell
+PS D:\devops\dev-devops-exp> curl http://127.0.0.1:60364
+StatusCode        : 200
+StatusDescription : OK
+Content           : <!DOCTYPE html>
+                    <html>
+                    <head>
+                    <title>Welcome to nginx!</title>
+...
+```
