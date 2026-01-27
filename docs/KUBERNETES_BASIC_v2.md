@@ -1133,3 +1133,112 @@ status:
 +
 +
 
+
+
+## PersistentVolume (PV) and PersistentVolumeClaim (PVC)
+
+### PersistentVolume (PV)
+- **en**:
+  - **What**: A piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using Storage Classes.
+  - **Where**: It is a cluster-wide resource (not namespaced).
+  - **Why**: To provide stable, persistent storage that exists independently of any individual Pod's lifecycle.
+  - **How**: Defined in YAML with details like capacity, access modes, and the actual storage backend (NFS, Cloud Disk, etc.).
+- **vi**:
+  - **What (Cái gì)**: Một phần tài nguyên lưu trữ trong cụm đã được quản trị viên cấp phát hoặc được cấp phát động thông qua StorageClass.
+  - **Where (Ở đâu)**: Là một tài nguyên ở cấp độ toàn cụm (không thuộc namespace cụ thể).
+  - **Why (Tại sao)**: Cung cấp bộ nhớ ổn định và bền vững, tồn tại độc lập với vòng đời của bất kỳ Pod đơn lẻ nào.
+  - **How (Như thế nào)**: Được định nghĩa trong tệp YAML với các chi tiết như dung lượng, chế độ truy cập và hạ tầng lưu trữ thực tế (NFS, Cloud Disk, v.v.).
+
+### PersistentVolumeClaim (PVC)
+- **en**:
+  - **What**: A request for storage by a user (developer). It is similar to a Pod; while Pods consume node resources, PVCs consume PV resources.
+  - **Where**: It is a Namespaced resource.
+  - **Why**: To allow developers to request storage without needing to know the technical details of the underlying storage hardware.
+  - **How**: A user creates a PVC specifying the size and access modes. Kubernetes coordinates the binding between the PVC and a matching PV.
+- **vi**:
+  - **What (Cái gì)**: Một yêu cầu sử dụng bộ nhớ từ người dùng (lập trình viên). Nó tương tự như Pod; nếu Pod tiêu thụ tài nguyên của Node thì PVC tiêu thụ tài nguyên của PV.
+  - **Where (Ở đâu)**: Là một tài nguyên thuộc về một Namespace cụ thể.
+  - **Why (Tại sao)**: Cho phép nhà phát triển yêu cầu bộ nhớ mà không cần biết chi tiết kỹ thuật về phần cứng lưu trữ bên dưới.
+  - **How (Như thế nào)**: Người dùng tạo một PVC chỉ định kích thước và chế độ truy cập. Kubernetes sẽ điều phối việc ràng buộc giữa PVC và một PV phù hợp.
+
+
+### Persistent Volumes (PV) & Persistent Volume Claims (PVC) Lifecycle
+- **en**:
+  - **What**: The lifecycle phases describe the various stages a PersistentVolume (PV) and a PersistentVolumeClaim (PVC) go through, from creation to deletion.
+  - **Where**: Managed by the Kubernetes Control Plane (pv-controller).
+  - **Why**: To provide a predictable way to manage storage resources, ensuring data persistence and proper resource cleanup.
+  - **When**: Triggered by administrator actions (Static provisioning), user requests (PVC creation), or storage class configuration (Dynamic provisioning).
+  - **How**: The interaction follows four main phases: **Provisioning**, **Binding**, **Using**, and **Reclaiming**.
+- **vi**:
+  - **What (Cái gì)**: Các giai đoạn vòng đời mô tả các bước mà PersistentVolume (PV) và PersistentVolumeClaim (PVC) trải qua, từ khi được tạo ra cho đến khi bị xóa bỏ.
+  - **Where (Ở đâu)**: Được quản lý bởi Kubernetes Control Plane (thành phần pv-controller).
+  - **Why (Tại sao)**: Để cung cấp một cách thức quản lý tài nguyên lưu trữ có thể dự đoán được, đảm bảo tính bền vững của dữ liệu và giải phóng tài nguyên đúng cách.
+  - **When (Khi nào)**: Được kích hoạt bởi hành động của quản trị viên (cấp phát tĩnh), yêu cầu của người dùng (tạo PVC), hoặc cấu hình của storage class (cấp phát động).
+  - **How (Như thế nào)**: Quá trình tương tác tuân theo bốn giai đoạn chính: **Provisioning**, **Binding**, **Using**, và **Reclaiming**.
+
+#### Detailed Lifecycle Phases
+| Phase | Description (en) | Mô tả (vi) |
+| :--- | :--- | :--- |
+| **1. Provisioning** | **Static**: Admin creates PV. **Dynamic**: StorageClass creates PV automatically when PVC is requested. | **Static**: Admin tạo PV thủ công. **Dynamic**: StorageClass tự động tạo PV khi có yêu cầu PVC. |
+| **2. Binding** | The control plane matches a PVC to a suitable PV and binds them together (1-to-1 relationship). | Control plane tìm PV phù hợp cho PVC và ràng buộc chúng với nhau (quan hệ 1-1). |
+| **3. Using** | Pods use the PVC as a volume. The cluster mounts the PV into the Pod. | Pod sử dụng PVC như một volume. Cluster sẽ gắn (mount) PV vào trong Pod. |
+| **4. Reclaiming** | Defines what happens to the PV when the PVC is deleted. | Xác định điều gì xảy ra với PV khi PVC bị xóa. |
+
+### Reclaim Policy
+- **en**:
+  - **What**: A policy that tells Kubernetes what to do with a PersistentVolume after it is released from its claim (PVC).
+  - **Why**: To manage the automation of storage cleanup and ensure data security or persistence.
+  - **Where**: Defined in the PersistentVolume (PV) spec or the StorageClass.
+  - **How**: There are three main types: **Retain**, **Delete**, and **Recycle**.
+
+- **vi**:
+  - **What (Cái gì)**: Một chính sách cho Kubernetes biết phải làm gì với PersistentVolume sau khi nó được giải phóng khỏi yêu cầu sử dụng (PVC).
+  - **Why (Tại sao)**: Để quản lý việc dọn dẹp bộ nhớ tự động và đảm bảo an toàn dữ liệu hoặc tính bền vững.
+  - **Where (Ở đâu)**: Được định nghĩa trong thông số (spec) của PersistentVolume (PV) hoặc trong StorageClass.
+  - **How (Như thế nào)**: Có ba loại chính: **Retain**, **Delete**, và **Recycle**.
+
+#### Detailed Reclaim Policies Breakdown
+| Policy | Behavior (en) | Hành vi (vi) |
+| :--- | :--- | :--- |
+| **Retain** | **Manual reclamation**: When the PVC is deleted, the PV still exists and the volume is considered "released". It must be manually cleaned up by an admin. | **Thu hồi thủ công**: Khi PVC bị xóa, PV vẫn tồn tại và volume được coi là "đã giải phóng". Quản trị viên phải tự dọn dẹp thủ công. |
+| **Delete** | **Automatic reclamation**: When the PVC is deleted, Kubernetes automatically removes the PV object as well as the associated storage asset in the external infrastructure (e.g., AWS EBS, GCE PD). | **Thu hồi tự động**: Khi PVC bị xóa, Kubernetes tự động xóa đối tượng PV cũng như tài nguyên lưu trữ liên quan ở hạ tầng bên ngoài (ví dụ: AWS EBS, GCE PD). |
+| **Recycle** | **Basic data scrubbing**: Performs a basic scrub (`rm -rf /thevolume/*`) and makes it available again for a new claim. | **Dọn dẹp dữ liệu cơ bản**: Thực hiện lệnh xóa cơ bản (`rm -rf /thevolume/*`) và cho phép PV sẵn sàng để một PVC khác sử dụng lại. |
+
+> **Warning**: **Recycle** is deprecated. The recommended approach is to use Dynamic Provisioning with the **Delete** policy.
+
+#### PV Status (Phases)
+- **en**:
+  - **Available**: Free resource, not yet bound.
+  - **Bound**: Successfully linked to a PVC.
+  - **Released**: PVC was deleted, but PV is not yet reclaimed.
+  - **Failed**: Automated reclamation failed.
+- **vi**:
+  - **Available (Sẵn sàng)**: Tài nguyên rảnh, chưa bị ràng buộc.
+  - **Bound (Đã buộc)**: Đã kết nối thành công với một PVC.
+  - **Released (Đã giải phóng)**: PVC đã bị xóa, nhưng PV chưa được thu hồi.
+  - **Failed (Lỗi)**: Quá trình thu hồi tự động gặp lỗi.
+
+## StorageClass
+- **en**:
+  - **What**: A Kubernetes resource that acts as a "blueprint" or "template" for storage. it defines different "classes" of storage (e.g., fast SSD vs. cheap HDD).
+  - **Why**: To enable **Dynamic Provisioning**. Instead of an admin manually creating PVs, the StorageClass automatically creates the PV when a user requests a PVC. This decouples developers from infrastructure details.
+  - **Where**: A cluster-wide resource.
+  - **When**: Triggered when a PVC is created that specifies a storageClassName.
+  - **How**: It uses a **Provisioner** (a plugin like AWS EBS, Azure Disk, or GCE PD) and a set of **Parameters** to determine how the physical storage should be created.
+
+- **vi**:
+  - **What (Cái gì)**: Một tài nguyên trong Kubernetes đóng vai trò như một "bản thiết kế" hoặc "khuôn mẫu" cho bộ nhớ. Nó định nghĩa các loại bộ nhớ khác nhau (ví dụ: SSD tốc độ cao so với HDD giá rẻ).
+  - **Why (Tại sao)**: Để cho phép **Cấp phát động (Dynamic Provisioning)**. Thay vì quản trị viên phải tạo PV thủ công, StorageClass sẽ tự động tạo PV khi người dùng yêu cầu một PVC. Điều này giúp tách biệt lập trình viên khỏi các chi tiết hạ tầng.
+  - **Where (Ở đâu)**: Là một tài nguyên ở cấp độ toàn cụm (cluster-wide).
+  - **When (Khi nào)**: Được kích hoạt khi một PVC được tạo ra và có chỉ định thuộc tính storageClassName.
+  - **How (Như thế nào)**: Nó sử dụng một **Provisioner** (một plugin như AWS EBS, Azure Disk, hoặc GCE PD) và một bộ các **Parameters** (tham số) để quyết định cách bộ nhớ vật lý được tạo ra.
+
+### Key StorageClass Parameters
+| Parameter | Description (en) | Mô tả (vi) |
+| :--- | :--- | :--- |
+| **provisioner** | The internal or external volume plugin used to create the storage. | Plugin (nội bộ hoặc bên ngoài) được dùng để tạo ra bộ nhớ. |
+| **reclaimPolicy** | What happens to the PV when the PVC is deleted (**Delete** or **Retain**). | Điều xảy ra với PV khi PVC bị xóa (**Delete** - Xóa hoặc **Retain** - Giữ lại). |
+| **volumeBindingMode** | When the volume should be created (**Immediate** or **WaitForFirstConsumer**). | Thời điểm tạo volume (**Immediate** - Ngay lập tức hoặc **WaitForFirstConsumer** - Chờ Pod được gán vào Node). |
+| **allowVolumeExpansion** | Whether the volume size can be increased after creation. | Cho phép tăng kích thước volume sau khi đã tạo hay không. |
+
+> **Note**: If a PVC does not specify a storageClassName, it will use the **Default StorageClass** of the cluster (if configured).
